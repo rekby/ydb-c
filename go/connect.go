@@ -1,4 +1,4 @@
-package ydb_c_binding
+package main
 
 import (
 	"context"

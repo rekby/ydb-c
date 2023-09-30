@@ -1,17 +1,20 @@
-package ydb_c_binding
-
-import "C"
+package main
 
 /*
-#include "../c_interface/interface.h"
+
+typedef struct ConnectionHandler {
+   int connection_id;
+} ConnectionHandler;
+
 */
+import "C"
 
 //export ydb_connect
 func ydb_connect(connectionString *C.char, connectionStringLen C.int) C.struct_ConnectionHandler {
 	connString := C.GoStringN(connectionString, connectionStringLen)
 	connectionID := startConnect(globalConnections, connString)
 	connectionHandler := C.struct_ConnectionHandler{
-		connection_id: connectionID,
+		connection_id: C.int(connectionID),
 	}
 	return connectionHandler
 }

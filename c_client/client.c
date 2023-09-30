@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "../c_interface/interface.h"
+#include "../c_interface/ydb_interface.h"
 
 int main(){
     int res;

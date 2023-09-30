@@ -1,4 +1,4 @@
-package ydb_c_binding
+package main
 
 import (
 	"github.com/rekby/safemutex"
@@ -17,7 +17,7 @@ func init() {
 
 type connectionStorage struct {
 	lastVal     int
-	connections map[int64]*safemutex.RWMutexWithPointers[connectionState]
+	connections map[int]*safemutex.RWMutexWithPointers[connectionState]
 }
 
 func (cs *connectionStorage) NextID() int {

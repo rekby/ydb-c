@@ -1,0 +1,8 @@
+.idea
+.vscode
+*.out
+
+/c_client/client_go
+/c_client/client_rust
+
+/go/_obj

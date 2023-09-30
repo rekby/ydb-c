@@ -10,7 +10,7 @@ import (
 
 const operationTimeout = time.Second * 5
 
-func startConnect(s *safemutex.RWMutexWithPointers[*connectionStorage], connectionString string) int {
+func startConnect(connectionString string) mconnectionState {
 	connStateMutex := &safemutex.RWMutexWithPointers[connectionState]{}
 	connStateMutex.Lock(func(synced connectionState) connectionState {
 		synced.done = make(chan struct{})
@@ -29,11 +29,16 @@ func startConnect(s *safemutex.RWMutexWithPointers[*connectionStorage], connecti
 		})
 	}()
 
-	var connectionID int
-	s.Lock(func(connections *connectionStorage) *connectionStorage {
-		connectionID = connections.NextID()
-		connections.connections[connectionID] = connStateMutex
-		return connections
+	return connStateMutex
+}
+
+func freeConnect(s mconnectionState) {
+	s.Lock(func(s connectionState) connectionState {
+		if s.driver != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), operationTimeout)
+			s.driver.Close(ctx)
+			cancel()
+		}
+		return s
 	})
-	return connectionID
 }

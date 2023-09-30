@@ -32,6 +32,7 @@ type connectionState struct {
 	driver *ydb.Driver
 	err    error
 }
+type mconnectionState = *safemutex.RWMutexWithPointers[connectionState]
 
 var _ CallState = &connectionState{}
 

@@ -4,7 +4,7 @@ clean:
 	rm -rf c_client/client_go go/_obj
 
 client_c_go:
-	gcc -L go/_obj/ -l ydb -o c_client/client_go c_client/client.c
+	gcc -o c_client/client_go c_client/client.c  -L go/_obj/ -l ydb
 
 go_library:
 	mkdir -p go/_obj

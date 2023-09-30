@@ -8,10 +8,15 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3"
 )
 
-const operationTimeout = time.Second * 10
+const operationTimeout = time.Second * 5
 
 func startConnect(s *safemutex.RWMutexWithPointers[*connectionStorage], connectionString string) int {
 	connStateMutex := &safemutex.RWMutexWithPointers[connectionState]{}
+	connStateMutex.Lock(func(synced connectionState) connectionState {
+		synced.done = make(chan struct{})
+		return synced
+	})
+
 	go func() {
 		ctx, ctxCancel := context.WithTimeout(context.Background(), operationTimeout)
 		driver, err := ydb.Open(ctx, connectionString)

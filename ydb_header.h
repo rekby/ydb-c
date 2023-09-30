@@ -84,6 +84,7 @@ extern "C" {
 #endif
 
 extern struct ConnectionHandler ydb_connect(char* connectionString, int connectionStringLen);
+extern int ydb_connect_wait(struct ConnectionHandler connection);
 extern int ydb_check_linked_library();
 
 #ifdef __cplusplus

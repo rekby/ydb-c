@@ -11,7 +11,9 @@ var (
 
 func init() {
 	globalConnections.Lock(func(_ *connectionStorage) *connectionStorage {
-		return &connectionStorage{}
+		return &connectionStorage{
+			connections: map[int]*safemutex.RWMutexWithPointers[connectionState]{},
+		}
 	})
 }
 

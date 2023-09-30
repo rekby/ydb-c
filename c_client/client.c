@@ -11,11 +11,10 @@ int main(){
 
     char *connectionString = "grpc://localhost:2136/local";
 
-    printf("step 0\n");
-
     YdbConnection *connection = ydb_connect(connectionString, strlen(connectionString));
 
-    printf("step 1\n");
+    int hasConnectedWithoutWait = ydb_connect_has_result(connection);
+    printf("hasConnectedWithoutWait: %d\n", hasConnectedWithoutWait);
 
     int connectErr = ydb_connect_wait(connection);
     if (connectErr) {
@@ -28,7 +27,8 @@ int main(){
 
     YdbResult *result = ydb_query(connection, query, strlen(query));
 
-    printf("step 2\n");
+    int hasResultWithoutWait = ydb_result_has_result(result);
+    printf("hasResultWithoutWait: %d\n", hasResultWithoutWait);
 
     ydb_result_wait(result);
     if (ydb_result_has_errors(result)){

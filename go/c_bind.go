@@ -23,6 +23,22 @@ func ydb_connect(connectionString *C.char, connectionStringLen C.int) *C.struct_
 	return ydbConnectionToC(connectionState)
 }
 
+//export ydb_connect_has_result
+func ydb_connect_has_result(connection *C.struct_YdbConnection) (hasResult C.int) {
+	cpointer := ydbConnectionToGo(connection)
+
+	connMutex := cpointer.Data()
+
+	connMutex.RLock(func(synced connectionState) {
+		if synced.IsDone() {
+			hasResult = 1
+		} else {
+			hasResult = 0
+		}
+	})
+	return hasResult
+}
+
 //export ydb_connect_wait
 func ydb_connect_wait(connection *C.struct_YdbConnection) (hasErrors C.int) {
 	cpointer := ydbConnectionToGo(connection)
@@ -71,6 +87,20 @@ func ydb_result_free(res *C.struct_YdbResult) {
 	ydbResultFree(cpointer.Data())
 
 	cpointer.Free()
+}
+
+//export ydb_result_has_result
+func ydb_result_has_result(res *C.struct_YdbResult) (hasResult C.int) {
+	cpointer := ydbResultToGo(res)
+	state := cpointer.Data()
+	state.RLock(func(synced queryState) {
+		if synced.IsDone() {
+			hasResult = 1
+		} else {
+			hasResult = 0
+		}
+	})
+	return hasResult
 }
 
 //export ydb_result_wait

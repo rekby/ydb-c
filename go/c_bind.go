@@ -16,8 +16,8 @@ import (
 )
 
 //export ydb_connect
-func ydb_connect(connectionString *C.char, connectionStringLen C.int) *C.struct_YdbConnection {
-	connString := C.GoStringN(connectionString, connectionStringLen)
+func ydb_connect(connectionString *C.char) *C.struct_YdbConnection {
+	connString := C.GoString(connectionString)
 	connectionState := startConnect(connString)
 
 	return ydbConnectionToC(connectionState)
@@ -72,10 +72,10 @@ func ydb_connect_free(connection *C.struct_YdbConnection) {
 }
 
 //export ydb_query
-func ydb_query(connection *C.struct_YdbConnection, query *C.char, queryLen C.int) *C.struct_YdbResult {
+func ydb_query(connection *C.struct_YdbConnection, query *C.char) *C.struct_YdbResult {
 	cpointer := ydbConnectionToGo(connection)
 
-	queryS := C.GoStringN(query, queryLen)
+	queryS := C.GoString(query)
 	queryState := executeQuery(cpointer.Data(), queryS)
 
 	return ydbResultToC(queryState)

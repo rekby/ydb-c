@@ -83,11 +83,11 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
-extern struct YdbConnection* ydb_connect(char* connectionString, int connectionStringLen);
+extern struct YdbConnection* ydb_connect(char* connectionString);
 extern int ydb_connect_has_result(struct YdbConnection* connection);
 extern int ydb_connect_wait(struct YdbConnection* connection);
 extern void ydb_connect_free(struct YdbConnection* connection);
-extern struct YdbResult* ydb_query(struct YdbConnection* connection, char* query, int queryLen);
+extern struct YdbResult* ydb_query(struct YdbConnection* connection, char* query);
 extern void ydb_result_free(struct YdbResult* res);
 extern int ydb_result_has_result(struct YdbResult* res);
 extern void ydb_result_wait(struct YdbResult* res);

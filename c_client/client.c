@@ -11,7 +11,7 @@ int main(){
 
     char *connectionString = "grpc://localhost:2136/local";
 
-    YdbConnection *connection = ydb_connect(connectionString, strlen(connectionString));
+    YdbConnection *connection = ydb_connect(connectionString);
 
     int hasConnectedWithoutWait = ydb_connect_has_result(connection);
     printf("hasConnectedWithoutWait: %d\n", hasConnectedWithoutWait);
@@ -25,7 +25,7 @@ int main(){
 
     char *query = "SELECT CAST(111 + 234 AS Utf8)";
 
-    YdbResult *result = ydb_query(connection, query, strlen(query));
+    YdbResult *result = ydb_query(connection, query);
 
     int hasResultWithoutWait = ydb_result_has_result(result);
     printf("hasResultWithoutWait: %d\n", hasResultWithoutWait);

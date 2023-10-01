@@ -2,7 +2,9 @@
 .vscode
 *.out
 
-/c_client/client_go
-/c_client/client_rust
+/c_client/client_go_dynamic
+/c_client/client_go_static
+/c_client/client_rust_dynamic
 
 /go/_obj
+/rust_ydb_client/target/

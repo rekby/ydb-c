@@ -9,14 +9,14 @@ pub(crate) struct YDBCError {
 }
 
 impl YDBCError {
-    pub fn new<T: Into<String>>(message: T)->Self{
-        Self{
+    pub fn new<T: Into<String>>(message: T) -> Self {
+        Self {
             message: message.into(),
         }
     }
 
-    pub fn from_err<T: Error>(err: T)->Self {
-        Self{
+    pub fn from_err<T: Error>(err: T) -> Self {
+        Self {
             message: err.to_string(),
         }
     }
@@ -24,15 +24,15 @@ impl YDBCError {
 
 impl Clone for YDBCError {
     fn clone(&self) -> Self {
-        Self{
-            message: self.message.clone()
+        Self {
+            message: self.message.clone(),
         }
     }
 }
 
 impl Debug for YDBCError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-            f.write_str(self.message.as_str())
+        f.write_str(self.message.as_str())
     }
 }
 
@@ -42,5 +42,4 @@ impl Display for YDBCError {
     }
 }
 
-impl Error for YDBCError{
-}
+impl Error for YDBCError {}

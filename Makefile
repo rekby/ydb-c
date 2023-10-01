@@ -9,7 +9,7 @@ client_c_go_static:
 client_c_go_dynamic:
 	gcc -o c_client/client_go_dynamic c_client/client.c  -L go/_obj/ -l ydb
 
-client_c_rust_dynamic:
+client_c_rust_dynamic: rust_library_dynamic
 	gcc -o c_client/client_rust_dynamic c_client/client.c  -L rust_ydb_client/target/debug/ -l rust_ydb_client
 
 go_library:
@@ -18,7 +18,7 @@ go_library:
 	go build -C go -o _obj/libydb.so -buildmode=c-shared
 	go build -C go -o _obj/libydb_static.a -buildmode=c-archive
 
-rust_library:
+rust_library_dynamic:
 	cd rust_ydb_client && cargo build
 
 	#cargo install --force cbindgen

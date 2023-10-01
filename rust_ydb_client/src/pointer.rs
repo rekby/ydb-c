@@ -8,8 +8,17 @@ pub(crate) trait Pointer {
 }
 
 pub(crate) struct CPointer<TData>{
-    data:TData,
+    pub data:TData,
     freed: atomic::AtomicBool,
+}
+
+impl<TData>CPointer<TData>{
+    pub fn new(data: TData)->Self{
+        Self{
+            data,
+            freed: atomic::AtomicBool::new(false),
+        }
+    }
 }
 
 impl <TData>Pointer for CPointer<TData> {

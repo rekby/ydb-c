@@ -1,45 +1,52 @@
-use std::sync::mpsc;
-use std::sync::mpsc::TryRecvError;
+use std::sync::{Arc};
+use std::time::Duration;
 use crate::call::CallState;
+use crate::errors::YDBCError;
+use crate::runtime::runtime_init;
 
-pub(crate) fn connect(connection_string: String)->ConnectionState{
-    let (sender, receiver) = mpsc::sync_channel(1);
+pub(crate) const OPERATION_TIMEOUT: Duration = Duration::from_secs(5);
+
+pub(crate) fn connect(connection_string: &str)->Arc<CallState<ydb::Client>>{
     let builder = match ydb::ClientBuilder::new_from_connection_string(connection_string){
         Err(err)=>{
-            return ConnectionState{
-                done: receiver,
-                client: Err(Box::new(err))
-            }
+            return Arc::new(CallState::new_with_error(YDBCError::from_err(err)))
         },
         Ok(builder)=>builder,
     };
 
     let client = match builder.client() {
         Err(err)=>
-            return ConnectionState{
-                done: receiver,
-                client: Err(Box::new(err))
-            },
+            return Arc::new(CallState::new_with_error(YDBCError::from_err(err))),
         Ok(client)=>client,
     };
 
-}
+    let (state, sender) = CallState::new();
+    let arc_state = Arc::new(state);
 
-pub (crate) struct ConnectionState {
-    done: mpsc::Receiver<bool>,
-    client: Result<ydb::Client, Box<dyn std::error::Error>>,
-}
+    let arc_state_copy = arc_state.clone();
 
-impl CallState for ConnectionState {
-    fn is_done(&self) -> bool {
-        match self.done.try_recv(){
-            Ok(_)=>true,
-            Err(TryRecvError::Empty)=>false,
-            Err(TryRecvError::Disconnected)=>true,
+    tokio::spawn(async move {
+        let res = match tokio::time::timeout(OPERATION_TIMEOUT, client.wait()).await{
+            Ok(client_wait_result) => {
+                match client_wait_result {
+                    Ok(_)=> {
+                        Ok(client)
+                    }
+                    Err(err)=>Err(YDBCError::from_err(err))
+                }
+            },
+            Err(_)=>{
+                Err(YDBCError::new("operation timeout"))
+            }
+        };
+
+        match res {
+            Ok(client)=>*arc_state_copy.data.lock().unwrap() = Some(client),
+            Err(err)=>*arc_state_copy.err.lock().unwrap() = Some(err),
         }
-    }
 
-    fn wait_done(&self) {
-        _ = self.done.recv();
-    }
+        drop(sender);
+    });
+
+    return arc_state
 }

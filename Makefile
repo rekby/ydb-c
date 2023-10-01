@@ -21,6 +21,6 @@ go_library:
 rust_library:
 	cd rust_ydb_client && cargo build
 
-	# cargo install --force cbindgen
+	#cargo install --force cbindgen
 	cbindgen --cpp-compat --lang c rust_ydb_client > rust_ydb_client/ydb_interface.h
 

@@ -10,3 +10,4 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
+ydb="0.6.2"

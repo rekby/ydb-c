@@ -26,7 +26,7 @@ pub struct YdbConnection {
 
 #[no_mangle]
 pub extern "C" fn ydb_check_linked_library() -> c_int {
-    1
+    2
 }
 
 #[no_mangle]

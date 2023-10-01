@@ -11,3 +11,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 ydb="0.6.2"
+
+[dependencies.tokio]
+version = "1.18"
+features = ["full"]

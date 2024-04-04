@@ -30,7 +30,7 @@ go_library_static:
 go_for_python_library_dynamic:
 	rm -rf go_for_python/_obj
 	mkdir -p go_for_python/_obj
-	go build -C go_for_python -o _obj/go_for_python.so -buildmode=c-shared
+	go build -C go_for_python -o _obj/go_for_python.so -buildmode=c-shared -ldflags="-linkmode external -L /opt/homebrew/opt/python@3.12/Frameworks/Python.framework/Versions/3.12/lib/python3.12/config-3.12-darwin"
 
 
 rust_headers:

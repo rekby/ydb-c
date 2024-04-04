@@ -7,4 +7,5 @@
 /c_client/client_rust_dynamic
 
 /go/_obj
+/go_for_python/_obj
 /rust_ydb_client/target/

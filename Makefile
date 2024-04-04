@@ -1,6 +1,6 @@
-all: client_c_go_static client_c_go_dynamic client_c_rust_dynamic go_headers rust_headers
+all: client_c_go_dynamic client_c_rust_dynamic go_headers rust_headers
 
-in_progress: rust_library_static client_c_rust_static
+in_progress: client_c_go_static rust_library_static client_c_rust_static
 
 clean:
 	rm -rf c_client/client_go_static c_client/client_go_dynamic go/_obj rust_ydb_client/target

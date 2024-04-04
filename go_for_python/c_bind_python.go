@@ -1,7 +1,7 @@
 package main
 
 import (
-	"unsafe"
+	"runtime"
 )
 
 // TODO: detect and set lib name by auto to LDFLAGS
@@ -18,8 +18,21 @@ import "C"
 
 //export ydb_python_read_result
 func ydb_python_read_result(self *C.PyObject, args *C.PyObject) *C.PyObject {
-	cRes := C.CString("test")
-	res := C.PyUnicode_FromString(cRes)
-	C.free(unsafe.Pointer(cRes))
+	return toPyString("haha")
+}
+
+func toPyString(s string) *C.PyObject {
+	sLen := len(s)
+	if sLen == 0 {
+		return C.PyUnicode_FromStringAndSize(nil, 0)
+	}
+
+	pinner := runtime.Pinner{}
+	// cPointer := uintptr(unsafe.Pointer(stringBytes))
+	cPointer := C._GoStringPtr(s)
+	pinner.Pin(cPointer)
+	res := C.PyUnicode_FromStringAndSize(cPointer, C.long(sLen))
+	pinner.Unpin()
+
 	return res
 }

@@ -1,4 +1,4 @@
-module github.com/rekby/ydb-c/go
+module github.com/rekby/ydb-c/go_for_python
 
 go 1.20
 

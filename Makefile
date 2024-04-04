@@ -1,4 +1,4 @@
-all: client_c_go_dynamic client_c_rust_dynamic go_headers rust_headers
+all: go_for_python_library_dynamic client_c_go_dynamic client_c_rust_dynamic go_headers rust_headers
 
 in_progress: client_c_go_static rust_library_static client_c_rust_static
 
@@ -26,6 +26,12 @@ go_library_dynamic:
 
 go_library_static:
 	go build -C go -o _obj/libydb_static.a -buildmode=c-archive
+
+go_for_python_library_dynamic:
+	rm -rf go_for_python/_obj
+	mkdir -p go_for_python/_obj
+	go build -C go_for_python -o _obj/go_for_python.so -buildmode=c-shared
+
 
 rust_headers:
 	#cargo install --force cbindgen

@@ -10,7 +10,7 @@ static struct PyModuleDef module = {
     "go_for_python", // module name, same as for PyInit_...
     NULL,
     -1,
-    NULL,
+    methods,
 };
 
 PyMODINIT_FUNC PyInit_go_for_python(void) {

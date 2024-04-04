@@ -133,11 +133,14 @@ def import_lib(filepath: str):
 # import_lib("../go_for_python/_obj/go_for_python.so")
 
 import sys
-sys.path.append("../go_for_python/_obj")
+from os.path import dirname, abspath
+libdir = dirname(dirname(abspath(__file__))) + "/go_for_python/_obj"
+print(libdir)
+sys.path.append(libdir)
 
 import go_for_python
 
 print(go_for_python)
 
-print(go_for_python.ydb_python_read_result)
+print(go_for_python.ydb_python_read_result())
 

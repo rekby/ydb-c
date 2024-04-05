@@ -77,11 +77,62 @@ class CTypesConn:
         lib.ydb_result_free(res)
         return rs
 
-class PyModConn:
+class CModConn:
     l: typing.Any
+    handler: typing.Any
+    mod: typing.Any
+
+    _closed: bool
 
     def __init__(self):
-        pass
+        self._closed = False
+
+        import sys
+        from os.path import dirname, abspath
+        libdir = dirname(dirname(abspath(__file__))) + "/go_for_python/_obj"
+        print(libdir)
+        sys.path.append(libdir)
+
+        import go_for_python
+        self.mod = go_for_python
+
+
+
+    def connect(self):
+            self.handler = self.mod.connect(connectionString)
+            print(self.handler)
+
+    def close(self):
+        if self._closed:
+            return
+
+        self._closed = True
+
+    def __del__(self):
+        self.close()
+
+    def query(self, query: str):
+        lib = self.lib
+        res = lib.ydb_query(self.handler, c_char_p(query.encode()))
+        lib.ydb_result_wait(res)
+
+        rs = []
+        while lib.ydb_result_next_readset(res) == 0:
+            result_set = []
+
+            while lib.ydb_result_next_row(res) == 0:
+                row = {}
+
+                bufLen = 100
+                c_res = create_string_buffer(b'\000', bufLen)
+                lib.ydb_result_read_first_field_text(res, c_res, bufLen)
+                field = c_res.value.decode()
+                row["first"] = field
+                result_set.append(row)
+            rs.append(result_set)
+
+        lib.ydb_result_free(res)
+        return rs
 
 
 def benchmark():
@@ -122,25 +173,5 @@ def benchmark():
     print(finish-start)
 
 
-def import_lib(filepath: str):
-    global __bootstrap__, __loader__, __file__
-    import sys, pkg_resources, imp
-    __file__ = pkg_resources.resource_filename(__name__,filepath)
-    __loader__ = None; del __bootstrap__, __loader__
-    imp.load_dynamic(__name__,__file__)
-
-
-# import_lib("../go_for_python/_obj/go_for_python.so")
-
-import sys
-from os.path import dirname, abspath
-libdir = dirname(dirname(abspath(__file__))) + "/go_for_python/_obj"
-print(libdir)
-sys.path.append(libdir)
-
-import go_for_python
-
-print(go_for_python)
-
-print(go_for_python.ydb_python_read_result())
-
+cMod = CModConn()
+cMod.connect()

@@ -1,5 +1,6 @@
 import time
 import typing
+import concurrent
 
 import ydb  # needs to be installed from pypi version 3.x
 
@@ -34,6 +35,10 @@ class PyModConn:
             topicName,
             consumerName,
             buffer_size_bytes=1*1024*1024,
+            decoder_executor=concurrent.futures.ThreadPoolExecutor(
+                max_workers=100,
+                thread_name_prefix="topic_asyncio_executor",
+            )
         )
 		# WARMUP, for test purposes only
         _ = self._reader.receive_message(timeout=1)

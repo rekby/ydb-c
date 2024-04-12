@@ -16,12 +16,24 @@ import (
 	"unsafe"
 )
 
-//export ydb_connect
-func ydb_connect(connectionString *C.char) *C.struct_YdbConnection {
-	connString := C.GoString(connectionString)
-	connectionState := startConnect(connString)
+func ydb_connect(connString string) C.ulong {
+	state := startConnect(connString)
 
-	return ydbConnectionToC(connectionState)
+	var waiter chan struct{}
+	state.RLock(func(synced connectionState) {
+		waiter = synced.done
+	})
+
+	<-waiter
+	state.RLock(func(synced connectionState) {
+		log.Println("on connect", synced.driver)
+		if synced.err != nil {
+			log.Fatalf("failed connect to ydb: %+v", synced.err)
+		}
+	})
+
+	stateC := ydbConnectionToC(state)
+	return C.ulong(uintptr(unsafe.Pointer(stateC)))
 }
 
 //export ydb_connect_has_result

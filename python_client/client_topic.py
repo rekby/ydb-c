@@ -47,9 +47,9 @@ class PyModConn:
         while True:
             try:
                 res = self._reader.receive_batch(timeout=1)
-                # print("Messages len:", len(res.messages))
-                # print("message:", res["messages"][0])
                 count += len(res.messages)
+                print(f"Messages len: {len(res.messages)} ({count})")
+                # print("message:", res["messages"][0])
                 iterations += 1
             except TimeoutError:
                 break

@@ -9,3 +9,5 @@
 /go/_obj
 /go_for_python/_obj
 /rust_ydb_client/target/
+
+/debug.txt

@@ -126,7 +126,6 @@ func convertBatchToC(batch *topicreader.Batch) (C.MessagesBatch, *runtime.Pinner
 	cBatch.messages = (*C.Message)(C.malloc(C.sizeof_Message * cBatch.messages_count))
 
 	buf := &bytes.Buffer{}
-
 	for i := range batch.Messages {
 		gMessage := batch.Messages[i]
 
@@ -196,6 +195,10 @@ func copyBytesToC(data []byte, pinner *runtime.Pinner) (*C.char, C.long) {
 	}
 
 	cData := (*C.char)(C.CBytes(data))
+	// pData := unsafe.SliceData(data)
+	// pinner.Pin(pData)
+	// cData := (*C.char)(unsafe.Pointer(pData))
+
 	return cData, C.long(len(data))
 }
 

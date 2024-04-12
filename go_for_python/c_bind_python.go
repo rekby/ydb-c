@@ -158,12 +158,12 @@ func freeMessagesBatch(cBatch C.MessagesBatch, pinner *runtime.Pinner) {
 		cMessageUnsafePointer := unsafe.Add(startMessagesPointer, C.sizeof_Message*C.ulong(i))
 		cMessage := (*C.Message)(cMessageUnsafePointer)
 
-		// if cMessage.producer_id != nil {
-		// 	C.free(unsafe.Pointer(cMessage.producer_id))
-		// }
-		// if cMessage.message_group_id != nil {
-		// 	C.free(unsafe.Pointer(cMessage.message_group_id))
-		// }
+		if cMessage.producer_id != nil {
+			C.free(unsafe.Pointer(cMessage.producer_id))
+		}
+		if cMessage.message_group_id != nil {
+			C.free(unsafe.Pointer(cMessage.message_group_id))
+		}
 		if cMessage.data != nil {
 			// log.Printf("Free: %v", unsafe.Pointer(cMessage.data))
 			C.free(unsafe.Pointer(cMessage.data))

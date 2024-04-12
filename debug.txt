@@ -1,7 +1,0 @@
-/usr/lib/python3/dist-packages/requests/__init__.py:87: RequestsDependencyWarning: urllib3 (1.26.18) or chardet (5.2.0) doesn't match a supported version!
-  warnings.warn("urllib3 ({}) or chardet ({}) doesn't match a supported "
-2024/04/12 17:33:44 on connect &{<nil> <nil> [] <nil> [0x7fb6dd784c60] 0xc000361ea0 [0x7fb6dd66e5a0 0x7fb6dd66e540 0x7fb6dd66e4e0 0x7fb6dd66e480] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] [] 0xc000394720 {0 0} 0xc0001c2200 map[] {{0 0}} [] <nil>}
-2024/04/12 17:33:44 created conn state pointer:  824633944224
-2024/04/12 17:33:44 read result of ydb_python_start_reader:  1
-2024/04/12 17:33:44 receiver conn state pointer:  824633944224
-2024/04/12 17:33:44 driver address: &{<nil> <nil> [] <nil> [0x7fb6dd784c60] 0xc000361ea0 [0x7fb6dd66e5a0 0x7fb6dd66e540 0x7fb6dd66e4e0 0x7fb6dd66e480] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] {{{{} 0} {0 0}} <nil>} <nil> [] [] 0xc000394720 {0 0} 0xc0001c2200 map[] {{0 0}} [] <nil>}

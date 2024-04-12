@@ -30,26 +30,35 @@ class PyModConn:
 
     def prepare(self):
         self.connect()
-        self._reader = self._driver.topic_client.reader(topicName, consumerName)
-        _ = self._reader.receive_batch(timeout=1)
+        self._reader = self._driver.topic_client.reader(
+            topicName,
+            consumerName,
+            buffer_size_bytes=1*1024*1024,
+        )
+		# WARMUP, for test purposes only
+        _ = self._reader.receive_message(timeout=1)
+        time.sleep(1)
 
     def test(self):
         print("start")
         count = 0
         start = time.monotonic()
+        iterations = 0
         while True:
             try:
                 res = self._reader.receive_batch(timeout=1)
-                # print("Messages len:", len(res["messages"]))
+                # print("Messages len:", len(res.messages))
                 # print("message:", res["messages"][0])
                 count += len(res.messages)
+                iterations += 1
             except TimeoutError:
                 break
 
         duration = time.monotonic() - start - 1
         return {
              "time": duration,
-             "count": count,
+             "count": count +1, # +1 - warmup
+             "iterations": iterations,
         }
 
 
@@ -86,6 +95,7 @@ class CModConn:
     def prepare(self):
         self.connect()
         self.reader = self.mod.start_reader(self.connection, topicName, consumerName)
+        time.sleep(1)
         # res = self.mod.read_batch(self.reader) # warnup
         # if res is None:
         #     print("None on warnup")
@@ -95,6 +105,7 @@ class CModConn:
         print("start")
         count = 0
         start = time.monotonic()
+        iterations = 0
         while True:
             res = self.mod.read_batch(self.reader)
             if res is None:
@@ -102,11 +113,13 @@ class CModConn:
             # print("Messages len:", len(res["messages"]))
             # print("message:", res["messages"][0])
             count += len(res["messages"])
+            iterations += 1
 
         duration = time.monotonic() - start - 1
         return {
              "time": duration,
-             "count": count,
+             "count": count + 1, # +1 for warmup
+             "iterations": iterations,
         }
 
 

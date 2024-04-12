@@ -12,12 +12,14 @@ driver.topic_client.create_topic("topic", consumers=["consumer"])
 
 writer = driver.topic_client.writer("topic")
 
-for batch_index in range(100):
+for batch_index in range(1000):
     print(batch_index)
     messages = []
-    for message_index in range(100):
+    for message_index in range(1000):
         messages.append(f"{batch_index}-{message_index}")
     writer.write(messages)
+    if batch_index % 50 == 0:
+        writer.flush()
 
 writer.close()
 driver.stop()

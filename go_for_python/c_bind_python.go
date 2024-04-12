@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"runtime"
 	"time"
@@ -65,11 +67,20 @@ func ydb_python_start_reader(self *C.PyObject, args *C.PyObject) *C.PyObject {
 	var topicReader *topicreader.Reader
 	connState.data.RLock(func(synced connectionState) {
 		log.Println("driver address:", synced.driver)
-		reader, err := synced.driver.Topic().StartReader(consumerName, topicoptions.ReadTopic(topicName))
+		reader, err := synced.driver.Topic().StartReader(
+			consumerName,
+			topicoptions.ReadTopic(topicName),
+			topicoptions.WithReaderBufferSizeBytes(1024*1024),
+		)
 		if err != nil {
 			log.Fatalf("failed to start reader: %+v", err)
 		}
 		topicReader = reader
+
+		// WARMUP, for test purposes only
+		ctxWarmup, cancel := context.WithTimeout(context.Background(), time.Second)
+		_, _ = reader.ReadMessage(ctxWarmup)
+		cancel()
 	})
 
 	return C.PyLong_FromUnsignedLong(ydbTopicReaderToC(topicReader))
@@ -78,9 +89,10 @@ func ydb_python_start_reader(self *C.PyObject, args *C.PyObject) *C.PyObject {
 //export ydb_python_read_batch
 func ydb_python_read_batch(self *C.PyObject, args *C.PyObject) *C.PyObject {
 	var preaderC C.ulong
-	res := C._py_read_ulong(args, &preaderC)
+	_ = C._py_read_ulong(args, &preaderC)
 
-	log.Println("get reader pointer result: %v, pointer: %v", res, preaderC)
+	// res := C._py_read_ulong(args, &preaderC)
+	// log.Printf("get reader pointer result: %v, pointer: %v", res, preaderC)
 
 	preader := ydbTopicReaderToGo(preaderC).data
 
@@ -95,7 +107,7 @@ func ydb_python_read_batch(self *C.PyObject, args *C.PyObject) *C.PyObject {
 		log.Fatalf("failed to read messages: %+v", err)
 	}
 
-	log.Println("Topic read messages count: ", len(batch.Messages))
+	// log.Println("Topic read messages count: ", len(batch.Messages))
 
 	return convertBatchToPython(batch)
 }
@@ -113,8 +125,13 @@ func convertBatchToC(batch *topicreader.Batch) (C.MessagesBatch, *runtime.Pinner
 	cBatch.messages_count = C.ulong(len(batch.Messages))
 	cBatch.messages = (*C.Message)(C.malloc(C.sizeof_Message * cBatch.messages_count))
 
+	buf := &bytes.Buffer{}
+
 	for i := range batch.Messages {
 		gMessage := batch.Messages[i]
+
+		buf.Reset()
+		io.Copy(buf, gMessage)
 
 		startMessagesPointer := unsafe.Pointer(cBatch.messages)
 		cMessageUnsafePointer := unsafe.Add(startMessagesPointer, C.sizeof_Message*C.ulong(i))
@@ -122,21 +139,39 @@ func convertBatchToC(batch *topicreader.Batch) (C.MessagesBatch, *runtime.Pinner
 
 		cMessage.seq_no = C.long(gMessage.SeqNo)
 		cMessage.created_at_timestamp_ms = C.long(gMessage.CreatedAt.UnixMilli())
-		cMessage.message_group_id, cMessage.message_group_id_len = pinGoString(gMessage.MessageGroupID, pinner)
+		cMessage.message_group_id, cMessage.message_group_id_len = copyStringToC(gMessage.MessageGroupID, pinner)
 		cMessage.offset = C.long(gMessage.Offset)
 		cMessage.written_at_timestamp_ms = C.long(gMessage.WrittenAt.UnixMilli())
-		cMessage.producer_id, cMessage.producer_id_len = pinGoString(gMessage.ProducerID, pinner)
-		cMessage.data = nil // TODO
-		cMessage.data_len = 0
+		cMessage.producer_id, cMessage.producer_id_len = copyStringToC(gMessage.ProducerID, pinner)
+		cMessage.data, cMessage.data_len = copyBytesToC(buf.Bytes(), pinner)
 	}
 
 	return cBatch, pinner
 }
 
 func freeMessagesBatch(cBatch C.MessagesBatch, pinner *runtime.Pinner) {
-	C.free(unsafe.Pointer(cBatch.messages))
 	pinner.Unpin()
-	log.Println("Unpin for messages batch called")
+	// log.Println("Unpin for messages batch called")
+
+	for i := C.ulong(0); i < cBatch.messages_count; i++ {
+		startMessagesPointer := unsafe.Pointer(cBatch.messages)
+		cMessageUnsafePointer := unsafe.Add(startMessagesPointer, C.sizeof_Message*C.ulong(i))
+		cMessage := (*C.Message)(cMessageUnsafePointer)
+
+		// if cMessage.producer_id != nil {
+		// 	C.free(unsafe.Pointer(cMessage.producer_id))
+		// }
+		// if cMessage.message_group_id != nil {
+		// 	C.free(unsafe.Pointer(cMessage.message_group_id))
+		// }
+		if cMessage.data != nil {
+			// log.Printf("Free: %v", unsafe.Pointer(cMessage.data))
+			C.free(unsafe.Pointer(cMessage.data))
+		}
+	}
+
+	C.free(unsafe.Pointer(cBatch.messages))
+	// log.Printf("Free: %v", unsafe.Pointer(cBatch.messages))
 }
 
 func toPyString(s string) *C.PyObject {
@@ -155,14 +190,24 @@ func toPyString(s string) *C.PyObject {
 	return res
 }
 
-func pinGoString(s string, pinner *runtime.Pinner) (*C.char, C.long) {
-	if len(s) == 0 {
+func copyBytesToC(data []byte, pinner *runtime.Pinner) (*C.char, C.long) {
+	if len(data) == 0 {
 		return nil, 0
 	}
 
-	sDataPointer := unsafe.Pointer(unsafe.StringData(s))
-	pinner.Pin(sDataPointer)
-	res := (*C.char)(sDataPointer)
+	cData := (*C.char)(C.CBytes(data))
+	return cData, C.long(len(data))
+}
+
+//go:nosplit
+func copyStringToC(s string, pinner *runtime.Pinner) (*C.char, C.long) {
+	sDataPointer := unsafe.StringData(s)
+	// pinner.Pin(sDataPointer)
+	// log.Print("pin ", sDataPointer)
+	// res := (*C.char)(unsafe.Pointer(sDataPointer))
+	res := C.CString(s)
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(sDataPointer)
 	return res, C.long(len(s))
 }
 

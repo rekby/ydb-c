@@ -1515,6 +1515,13 @@ static const char *__pyx_f[] = {
   #define __PYX_FORCE_INIT_THREADS 0
 #endif
 
+/* NoFastGil.proto */
+#define __Pyx_PyGILState_Ensure PyGILState_Ensure
+#define __Pyx_PyGILState_Release PyGILState_Release
+#define __Pyx_FastGIL_Remember()
+#define __Pyx_FastGIL_Forget()
+#define __Pyx_FastGilFuncInit()
+
 /* #### Code section: numeric_typedefs ### */
 /* #### Code section: complex_type_declarations ### */
 /* #### Code section: type_declarations ### */
@@ -1564,7 +1571,7 @@ struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Result {
 };
 
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":63
+/* "cython_ydb_extension/cython_ydb_extension.pyx":65
  * 
  * 
  * cdef class Connection:             # <<<<<<<<<<<<<<
@@ -1597,7 +1604,7 @@ struct __pyx_vtabstruct_20cython_ydb_extension_20cython_ydb_extension_Result {
 static struct __pyx_vtabstruct_20cython_ydb_extension_20cython_ydb_extension_Result *__pyx_vtabptr_20cython_ydb_extension_20cython_ydb_extension_Result;
 
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":63
+/* "cython_ydb_extension/cython_ydb_extension.pyx":65
  * 
  * 
  * cdef class Connection:             # <<<<<<<<<<<<<<
@@ -2452,6 +2459,7 @@ static const char __pyx_k_Result_close[] = "Result.close";
 static const char __pyx_k_is_coroutine[] = "_is_coroutine";
 static const char __pyx_k_stringsource[] = "<stringsource>";
 static const char __pyx_k_reduce_cython[] = "__reduce_cython__";
+static const char __pyx_k_query_bytes_py[] = "query_bytes_py";
 static const char __pyx_k_Result_next_row[] = "Result.next_row";
 static const char __pyx_k_setstate_cython[] = "__setstate_cython__";
 static const char __pyx_k_Connection_close[] = "Connection.close";
@@ -2664,6 +2672,7 @@ typedef struct {
   PyObject *__pyx_n_s_pyx_vtable;
   PyObject *__pyx_n_s_query;
   PyObject *__pyx_n_s_query_bytes;
+  PyObject *__pyx_n_s_query_bytes_py;
   PyObject *__pyx_n_s_reduce;
   PyObject *__pyx_n_s_reduce_cython;
   PyObject *__pyx_n_s_reduce_ex;
@@ -2797,6 +2806,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_pyx_vtable);
   Py_CLEAR(clear_module_state->__pyx_n_s_query);
   Py_CLEAR(clear_module_state->__pyx_n_s_query_bytes);
+  Py_CLEAR(clear_module_state->__pyx_n_s_query_bytes_py);
   Py_CLEAR(clear_module_state->__pyx_n_s_reduce);
   Py_CLEAR(clear_module_state->__pyx_n_s_reduce_cython);
   Py_CLEAR(clear_module_state->__pyx_n_s_reduce_ex);
@@ -2908,6 +2918,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_pyx_vtable);
   Py_VISIT(traverse_module_state->__pyx_n_s_query);
   Py_VISIT(traverse_module_state->__pyx_n_s_query_bytes);
+  Py_VISIT(traverse_module_state->__pyx_n_s_query_bytes_py);
   Py_VISIT(traverse_module_state->__pyx_n_s_reduce);
   Py_VISIT(traverse_module_state->__pyx_n_s_reduce_cython);
   Py_VISIT(traverse_module_state->__pyx_n_s_reduce_ex);
@@ -3119,6 +3130,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_pyx_vtable __pyx_mstate_global->__pyx_n_s_pyx_vtable
 #define __pyx_n_s_query __pyx_mstate_global->__pyx_n_s_query
 #define __pyx_n_s_query_bytes __pyx_mstate_global->__pyx_n_s_query_bytes
+#define __pyx_n_s_query_bytes_py __pyx_mstate_global->__pyx_n_s_query_bytes_py
 #define __pyx_n_s_reduce __pyx_mstate_global->__pyx_n_s_reduce
 #define __pyx_n_s_reduce_cython __pyx_mstate_global->__pyx_n_s_reduce_cython
 #define __pyx_n_s_reduce_ex __pyx_mstate_global->__pyx_n_s_reduce_ex
@@ -3705,7 +3717,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
  * 
  *         self._closed = True             # <<<<<<<<<<<<<<
  *         # print("closing result {0:x}", <unsigned long> self._result)
- *         ydb_c.ydb_result_free(self._result)
+ *         with nogil:
  */
   __Pyx_INCREF(Py_True);
   __Pyx_GIVEREF(Py_True);
@@ -3716,11 +3728,47 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
   /* "cython_ydb_extension/cython_ydb_extension.pyx":26
  *         self._closed = True
  *         # print("closing result {0:x}", <unsigned long> self._result)
- *         ydb_c.ydb_result_free(self._result)             # <<<<<<<<<<<<<<
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             ydb_c.ydb_result_free(self._result)
+ * 
+ */
+  {
+      #ifdef WITH_THREAD
+      PyThreadState *_save;
+      _save = NULL;
+      Py_UNBLOCK_THREADS
+      __Pyx_FastGIL_Remember();
+      #endif
+      /*try:*/ {
+
+        /* "cython_ydb_extension/cython_ydb_extension.pyx":27
+ *         # print("closing result {0:x}", <unsigned long> self._result)
+ *         with nogil:
+ *             ydb_c.ydb_result_free(self._result)             # <<<<<<<<<<<<<<
  * 
  *     def __del__(self):
  */
-  ydb_result_free(__pyx_v_self->_result);
+        ydb_result_free(__pyx_v_self->_result);
+      }
+
+      /* "cython_ydb_extension/cython_ydb_extension.pyx":26
+ *         self._closed = True
+ *         # print("closing result {0:x}", <unsigned long> self._result)
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             ydb_c.ydb_result_free(self._result)
+ * 
+ */
+      /*finally:*/ {
+        /*normal exit:*/{
+          #ifdef WITH_THREAD
+          __Pyx_FastGIL_Forget();
+          Py_BLOCK_THREADS
+          #endif
+          goto __pyx_L6;
+        }
+        __pyx_L6:;
+      }
+  }
 
   /* "cython_ydb_extension/cython_ydb_extension.pyx":20
  *         return res
@@ -3742,8 +3790,8 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
   return __pyx_r;
 }
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":28
- *         ydb_c.ydb_result_free(self._result)
+/* "cython_ydb_extension/cython_ydb_extension.pyx":29
+ *             ydb_c.ydb_result_free(self._result)
  * 
  *     def __del__(self):             # <<<<<<<<<<<<<<
  *         self.close()
@@ -3774,14 +3822,14 @@ static void __pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_4__de
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__del__", 1);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":29
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":30
  * 
  *     def __del__(self):
  *         self.close()             # <<<<<<<<<<<<<<
  * 
  *     cpdef wait(self):
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_close); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_close); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -3801,14 +3849,14 @@ static void __pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_4__de
     PyObject *__pyx_callargs[2] = {__pyx_t_3, NULL};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 29, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 30, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":28
- *         ydb_c.ydb_result_free(self._result)
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":29
+ *             ydb_c.ydb_result_free(self._result)
  * 
  *     def __del__(self):             # <<<<<<<<<<<<<<
  *         self.close()
@@ -3826,12 +3874,12 @@ static void __pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_4__de
   __Pyx_RefNannyFinishContext();
 }
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":31
+/* "cython_ydb_extension/cython_ydb_extension.pyx":32
  *         self.close()
  * 
  *     cpdef wait(self):             # <<<<<<<<<<<<<<
  *         # print("wait result", <unsigned long> self._result)
- *         ydb_c.ydb_result_wait(self._result)
+ *         with nogil:
  */
 
 static PyObject *__pyx_pw_20cython_ydb_extension_20cython_ydb_extension_6Result_7wait(PyObject *__pyx_v_self, 
@@ -3862,7 +3910,7 @@ static PyObject *__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_w
     if (unlikely(!__Pyx_object_dict_version_matches(((PyObject *)__pyx_v_self), __pyx_tp_dict_version, __pyx_obj_dict_version))) {
       PY_UINT64_T __pyx_typedict_guard = __Pyx_get_tp_dict_version(((PyObject *)__pyx_v_self));
       #endif
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_wait); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_wait); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 32, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       if (!__Pyx_IsSameCFunction(__pyx_t_1, (void*) __pyx_pw_20cython_ydb_extension_20cython_ydb_extension_6Result_7wait)) {
         __Pyx_XDECREF(__pyx_r);
@@ -3885,7 +3933,7 @@ static PyObject *__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_w
           PyObject *__pyx_callargs[2] = {__pyx_t_4, NULL};
           __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_5, 0+__pyx_t_5);
           __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-          if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 31, __pyx_L1_error)
+          if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 32, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         }
@@ -3907,21 +3955,57 @@ static PyObject *__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_w
     #endif
   }
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":33
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":34
  *     cpdef wait(self):
  *         # print("wait result", <unsigned long> self._result)
- *         ydb_c.ydb_result_wait(self._result)             # <<<<<<<<<<<<<<
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             ydb_c.ydb_result_wait(self._result)
+ * 
+ */
+  {
+      #ifdef WITH_THREAD
+      PyThreadState *_save;
+      _save = NULL;
+      Py_UNBLOCK_THREADS
+      __Pyx_FastGIL_Remember();
+      #endif
+      /*try:*/ {
+
+        /* "cython_ydb_extension/cython_ydb_extension.pyx":35
+ *         # print("wait result", <unsigned long> self._result)
+ *         with nogil:
+ *             ydb_c.ydb_result_wait(self._result)             # <<<<<<<<<<<<<<
  * 
  *     cdef _ensure_no_errors(self):
  */
-  ydb_result_wait(__pyx_v_self->_result);
+        ydb_result_wait(__pyx_v_self->_result);
+      }
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":31
+      /* "cython_ydb_extension/cython_ydb_extension.pyx":34
+ *     cpdef wait(self):
+ *         # print("wait result", <unsigned long> self._result)
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             ydb_c.ydb_result_wait(self._result)
+ * 
+ */
+      /*finally:*/ {
+        /*normal exit:*/{
+          #ifdef WITH_THREAD
+          __Pyx_FastGIL_Forget();
+          Py_BLOCK_THREADS
+          #endif
+          goto __pyx_L5;
+        }
+        __pyx_L5:;
+      }
+  }
+
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":32
  *         self.close()
  * 
  *     cpdef wait(self):             # <<<<<<<<<<<<<<
  *         # print("wait result", <unsigned long> self._result)
- *         ydb_c.ydb_result_wait(self._result)
+ *         with nogil:
  */
 
   /* function exit code */
@@ -3990,7 +4074,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("wait", 1);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_wait(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_wait(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -4007,8 +4091,8 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
   return __pyx_r;
 }
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":35
- *         ydb_c.ydb_result_wait(self._result)
+/* "cython_ydb_extension/cython_ydb_extension.pyx":37
+ *             ydb_c.ydb_result_wait(self._result)
  * 
  *     cdef _ensure_no_errors(self):             # <<<<<<<<<<<<<<
  *         if ydb_c.ydb_result_has_errors(self._result) != 0:
@@ -4025,7 +4109,7 @@ static PyObject *__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_ensure_no_errors", 1);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":36
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":38
  * 
  *     cdef _ensure_no_errors(self):
  *         if ydb_c.ydb_result_has_errors(self._result) != 0:             # <<<<<<<<<<<<<<
@@ -4035,20 +4119,20 @@ static PyObject *__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result__
   __pyx_t_1 = (ydb_result_has_errors(__pyx_v_self->_result) != 0);
   if (unlikely(__pyx_t_1)) {
 
-    /* "cython_ydb_extension/cython_ydb_extension.pyx":37
+    /* "cython_ydb_extension/cython_ydb_extension.pyx":39
  *     cdef _ensure_no_errors(self):
  *         if ydb_c.ydb_result_has_errors(self._result) != 0:
  *             raise Exception("Ydb result has errors.")             # <<<<<<<<<<<<<<
  * 
  *     def to_results(self):
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 37, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 39, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __PYX_ERR(0, 37, __pyx_L1_error)
+    __PYX_ERR(0, 39, __pyx_L1_error)
 
-    /* "cython_ydb_extension/cython_ydb_extension.pyx":36
+    /* "cython_ydb_extension/cython_ydb_extension.pyx":38
  * 
  *     cdef _ensure_no_errors(self):
  *         if ydb_c.ydb_result_has_errors(self._result) != 0:             # <<<<<<<<<<<<<<
@@ -4057,8 +4141,8 @@ static PyObject *__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result__
  */
   }
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":35
- *         ydb_c.ydb_result_wait(self._result)
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":37
+ *             ydb_c.ydb_result_wait(self._result)
  * 
  *     cdef _ensure_no_errors(self):             # <<<<<<<<<<<<<<
  *         if ydb_c.ydb_result_has_errors(self._result) != 0:
@@ -4078,7 +4162,7 @@ static PyObject *__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result__
   return __pyx_r;
 }
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":39
+/* "cython_ydb_extension/cython_ydb_extension.pyx":41
  *             raise Exception("Ydb result has errors.")
  * 
  *     def to_results(self):             # <<<<<<<<<<<<<<
@@ -4153,7 +4237,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("to_results", 1);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":40
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":42
  * 
  *     def to_results(self):
  *         cdef size_t bufSize = 1024             # <<<<<<<<<<<<<<
@@ -4162,7 +4246,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
  */
   __pyx_v_bufSize = 0x400;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":41
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":43
  *     def to_results(self):
  *         cdef size_t bufSize = 1024
  *         cdef char* mem = NULL             # <<<<<<<<<<<<<<
@@ -4171,7 +4255,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
  */
   __pyx_v_mem = NULL;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":42
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":44
  *         cdef size_t bufSize = 1024
  *         cdef char* mem = NULL
  *         try:             # <<<<<<<<<<<<<<
@@ -4180,7 +4264,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
  */
   /*try:*/ {
 
-    /* "cython_ydb_extension/cython_ydb_extension.pyx":43
+    /* "cython_ydb_extension/cython_ydb_extension.pyx":45
  *         cdef char* mem = NULL
  *         try:
  *             mem = <char*>PyMem_Malloc(bufSize)             # <<<<<<<<<<<<<<
@@ -4189,19 +4273,19 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
  */
     __pyx_v_mem = ((char *)PyMem_Malloc(__pyx_v_bufSize));
 
-    /* "cython_ydb_extension/cython_ydb_extension.pyx":44
+    /* "cython_ydb_extension/cython_ydb_extension.pyx":46
  *         try:
  *             mem = <char*>PyMem_Malloc(bufSize)
  *             results = []             # <<<<<<<<<<<<<<
  *             while ydb_c.ydb_result_next_readset(self._result) == 0:
  *                 result = []
  */
-    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L4_error)
+    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L4_error)
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_v_results = ((PyObject*)__pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "cython_ydb_extension/cython_ydb_extension.pyx":45
+    /* "cython_ydb_extension/cython_ydb_extension.pyx":47
  *             mem = <char*>PyMem_Malloc(bufSize)
  *             results = []
  *             while ydb_c.ydb_result_next_readset(self._result) == 0:             # <<<<<<<<<<<<<<
@@ -4212,28 +4296,28 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
       __pyx_t_2 = (ydb_result_next_readset(__pyx_v_self->_result) == 0);
       if (!__pyx_t_2) break;
 
-      /* "cython_ydb_extension/cython_ydb_extension.pyx":46
+      /* "cython_ydb_extension/cython_ydb_extension.pyx":48
  *             results = []
  *             while ydb_c.ydb_result_next_readset(self._result) == 0:
  *                 result = []             # <<<<<<<<<<<<<<
  *                 results.append(result)
  *                 while ydb_c.ydb_result_next_row(self._result) == 0:
  */
-      __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L4_error)
+      __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 48, __pyx_L4_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_XDECREF_SET(__pyx_v_result, ((PyObject*)__pyx_t_1));
       __pyx_t_1 = 0;
 
-      /* "cython_ydb_extension/cython_ydb_extension.pyx":47
+      /* "cython_ydb_extension/cython_ydb_extension.pyx":49
  *             while ydb_c.ydb_result_next_readset(self._result) == 0:
  *                 result = []
  *                 results.append(result)             # <<<<<<<<<<<<<<
  *                 while ydb_c.ydb_result_next_row(self._result) == 0:
  *                     row = {}
  */
-      __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_results, __pyx_v_result); if (unlikely(__pyx_t_3 == ((int)-1))) __PYX_ERR(0, 47, __pyx_L4_error)
+      __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_results, __pyx_v_result); if (unlikely(__pyx_t_3 == ((int)-1))) __PYX_ERR(0, 49, __pyx_L4_error)
 
-      /* "cython_ydb_extension/cython_ydb_extension.pyx":48
+      /* "cython_ydb_extension/cython_ydb_extension.pyx":50
  *                 result = []
  *                 results.append(result)
  *                 while ydb_c.ydb_result_next_row(self._result) == 0:             # <<<<<<<<<<<<<<
@@ -4244,28 +4328,28 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
         __pyx_t_2 = (ydb_result_next_row(__pyx_v_self->_result) == 0);
         if (!__pyx_t_2) break;
 
-        /* "cython_ydb_extension/cython_ydb_extension.pyx":49
+        /* "cython_ydb_extension/cython_ydb_extension.pyx":51
  *                 results.append(result)
  *                 while ydb_c.ydb_result_next_row(self._result) == 0:
  *                     row = {}             # <<<<<<<<<<<<<<
  *                     result.append(row)
  *                     ydb_c.ydb_result_read_first_field_text(self._result, mem, <int>bufSize)
  */
-        __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L4_error)
+        __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 51, __pyx_L4_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_XDECREF_SET(__pyx_v_row, ((PyObject*)__pyx_t_1));
         __pyx_t_1 = 0;
 
-        /* "cython_ydb_extension/cython_ydb_extension.pyx":50
+        /* "cython_ydb_extension/cython_ydb_extension.pyx":52
  *                 while ydb_c.ydb_result_next_row(self._result) == 0:
  *                     row = {}
  *                     result.append(row)             # <<<<<<<<<<<<<<
  *                     ydb_c.ydb_result_read_first_field_text(self._result, mem, <int>bufSize)
  *                     row["first"] = mem.decode()
  */
-        __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_result, __pyx_v_row); if (unlikely(__pyx_t_3 == ((int)-1))) __PYX_ERR(0, 50, __pyx_L4_error)
+        __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_result, __pyx_v_row); if (unlikely(__pyx_t_3 == ((int)-1))) __PYX_ERR(0, 52, __pyx_L4_error)
 
-        /* "cython_ydb_extension/cython_ydb_extension.pyx":51
+        /* "cython_ydb_extension/cython_ydb_extension.pyx":53
  *                     row = {}
  *                     result.append(row)
  *                     ydb_c.ydb_result_read_first_field_text(self._result, mem, <int>bufSize)             # <<<<<<<<<<<<<<
@@ -4274,22 +4358,22 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
  */
         (void)(ydb_result_read_first_field_text(__pyx_v_self->_result, __pyx_v_mem, ((int)__pyx_v_bufSize)));
 
-        /* "cython_ydb_extension/cython_ydb_extension.pyx":52
+        /* "cython_ydb_extension/cython_ydb_extension.pyx":54
  *                     result.append(row)
  *                     ydb_c.ydb_result_read_first_field_text(self._result, mem, <int>bufSize)
  *                     row["first"] = mem.decode()             # <<<<<<<<<<<<<<
  *             return results
  *         finally:
  */
-        __pyx_t_4 = __Pyx_ssize_strlen(__pyx_v_mem); if (unlikely(__pyx_t_4 == ((Py_ssize_t)-1))) __PYX_ERR(0, 52, __pyx_L4_error)
-        __pyx_t_1 = __Pyx_decode_c_string(__pyx_v_mem, 0, __pyx_t_4, NULL, NULL, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 52, __pyx_L4_error)
+        __pyx_t_4 = __Pyx_ssize_strlen(__pyx_v_mem); if (unlikely(__pyx_t_4 == ((Py_ssize_t)-1))) __PYX_ERR(0, 54, __pyx_L4_error)
+        __pyx_t_1 = __Pyx_decode_c_string(__pyx_v_mem, 0, __pyx_t_4, NULL, NULL, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 54, __pyx_L4_error)
         __Pyx_GOTREF(__pyx_t_1);
-        if (unlikely((PyDict_SetItem(__pyx_v_row, __pyx_n_u_first, __pyx_t_1) < 0))) __PYX_ERR(0, 52, __pyx_L4_error)
+        if (unlikely((PyDict_SetItem(__pyx_v_row, __pyx_n_u_first, __pyx_t_1) < 0))) __PYX_ERR(0, 54, __pyx_L4_error)
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       }
     }
 
-    /* "cython_ydb_extension/cython_ydb_extension.pyx":53
+    /* "cython_ydb_extension/cython_ydb_extension.pyx":55
  *                     ydb_c.ydb_result_read_first_field_text(self._result, mem, <int>bufSize)
  *                     row["first"] = mem.decode()
  *             return results             # <<<<<<<<<<<<<<
@@ -4302,7 +4386,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
     goto __pyx_L3_return;
   }
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":55
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":57
  *             return results
  *         finally:
  *             if mem != NULL:             # <<<<<<<<<<<<<<
@@ -4329,7 +4413,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
         __pyx_t_2 = (__pyx_v_mem != NULL);
         if (__pyx_t_2) {
 
-          /* "cython_ydb_extension/cython_ydb_extension.pyx":56
+          /* "cython_ydb_extension/cython_ydb_extension.pyx":58
  *         finally:
  *             if mem != NULL:
  *                 PyMem_Free(mem)             # <<<<<<<<<<<<<<
@@ -4338,7 +4422,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
  */
           PyMem_Free(__pyx_v_mem);
 
-          /* "cython_ydb_extension/cython_ydb_extension.pyx":55
+          /* "cython_ydb_extension/cython_ydb_extension.pyx":57
  *             return results
  *         finally:
  *             if mem != NULL:             # <<<<<<<<<<<<<<
@@ -4367,7 +4451,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
       __pyx_t_2 = (__pyx_v_mem != NULL);
       if (__pyx_t_2) {
 
-        /* "cython_ydb_extension/cython_ydb_extension.pyx":56
+        /* "cython_ydb_extension/cython_ydb_extension.pyx":58
  *         finally:
  *             if mem != NULL:
  *                 PyMem_Free(mem)             # <<<<<<<<<<<<<<
@@ -4376,7 +4460,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
  */
         PyMem_Free(__pyx_v_mem);
 
-        /* "cython_ydb_extension/cython_ydb_extension.pyx":55
+        /* "cython_ydb_extension/cython_ydb_extension.pyx":57
  *             return results
  *         finally:
  *             if mem != NULL:             # <<<<<<<<<<<<<<
@@ -4390,7 +4474,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
     }
   }
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":39
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":41
  *             raise Exception("Ydb result has errors.")
  * 
  *     def to_results(self):             # <<<<<<<<<<<<<<
@@ -4412,7 +4496,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
   return __pyx_r;
 }
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":58
+/* "cython_ydb_extension/cython_ydb_extension.pyx":60
  *                 PyMem_Free(mem)
  * 
  *     cpdef next_row(self):             # <<<<<<<<<<<<<<
@@ -4448,7 +4532,7 @@ static PyObject *__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_n
     if (unlikely(!__Pyx_object_dict_version_matches(((PyObject *)__pyx_v_self), __pyx_tp_dict_version, __pyx_obj_dict_version))) {
       PY_UINT64_T __pyx_typedict_guard = __Pyx_get_tp_dict_version(((PyObject *)__pyx_v_self));
       #endif
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_next_row); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 58, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_next_row); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 60, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       if (!__Pyx_IsSameCFunction(__pyx_t_1, (void*) __pyx_pw_20cython_ydb_extension_20cython_ydb_extension_6Result_11next_row)) {
         __Pyx_XDECREF(__pyx_r);
@@ -4471,7 +4555,7 @@ static PyObject *__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_n
           PyObject *__pyx_callargs[2] = {__pyx_t_4, NULL};
           __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_5, 0+__pyx_t_5);
           __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-          if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 58, __pyx_L1_error)
+          if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 60, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         }
@@ -4493,7 +4577,7 @@ static PyObject *__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_n
     #endif
   }
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":59
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":61
  * 
  *     cpdef next_row(self):
  *         ydb_c.ydb_result_next_row(self._result)             # <<<<<<<<<<<<<<
@@ -4502,18 +4586,18 @@ static PyObject *__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_n
  */
   (void)(ydb_result_next_row(__pyx_v_self->_result));
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":60
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":62
  *     cpdef next_row(self):
  *         ydb_c.ydb_result_next_row(self._result)
  *         self._ensure_no_errors()             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_t_1 = ((struct __pyx_vtabstruct_20cython_ydb_extension_20cython_ydb_extension_Result *)__pyx_v_self->__pyx_vtab)->_ensure_no_errors(__pyx_v_self); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 60, __pyx_L1_error)
+  __pyx_t_1 = ((struct __pyx_vtabstruct_20cython_ydb_extension_20cython_ydb_extension_Result *)__pyx_v_self->__pyx_vtab)->_ensure_no_errors(__pyx_v_self); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 62, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":58
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":60
  *                 PyMem_Free(mem)
  * 
  *     cpdef next_row(self):             # <<<<<<<<<<<<<<
@@ -4587,7 +4671,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("next_row", 1);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_next_row(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_next_row(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 60, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -4818,7 +4902,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_6Result_
   return __pyx_r;
 }
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":67
+/* "cython_ydb_extension/cython_ydb_extension.pyx":69
  *     cdef bool _closed
  * 
  *     def __init__(self):             # <<<<<<<<<<<<<<
@@ -4859,20 +4943,20 @@ static int __pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connection__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__init__", 1);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":68
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":70
  * 
  *     def __init__(self):
  *         raise TypeError('Cannot create instance from Python')             # <<<<<<<<<<<<<<
  * 
  *     @staticmethod
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_TypeError, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_TypeError, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 70, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_Raise(__pyx_t_1, 0, 0, 0);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __PYX_ERR(0, 68, __pyx_L1_error)
+  __PYX_ERR(0, 70, __pyx_L1_error)
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":67
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":69
  *     cdef bool _closed
  * 
  *     def __init__(self):             # <<<<<<<<<<<<<<
@@ -4889,7 +4973,7 @@ static int __pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connection__
   return __pyx_r;
 }
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":71
+/* "cython_ydb_extension/cython_ydb_extension.pyx":73
  * 
  *     @staticmethod
  *     cdef Connection create(ydb_c.YdbConnection* connection_handler):             # <<<<<<<<<<<<<<
@@ -4908,14 +4992,14 @@ static struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("create", 1);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":72
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":74
  *     @staticmethod
  *     cdef Connection create(ydb_c.YdbConnection* connection_handler):
  *         res = <Connection>Connection.__new__(Connection) # create instance without call __init__             # <<<<<<<<<<<<<<
  *         res._closed = False
  *         res._connection = connection_handler
  */
-  __pyx_t_1 = ((PyObject *)__pyx_tp_new_20cython_ydb_extension_20cython_ydb_extension_Connection(((PyTypeObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection), __pyx_empty_tuple, NULL)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
+  __pyx_t_1 = ((PyObject *)__pyx_tp_new_20cython_ydb_extension_20cython_ydb_extension_Connection(((PyTypeObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection), __pyx_empty_tuple, NULL)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
   __Pyx_GOTREF((PyObject *)__pyx_t_1);
   __pyx_t_2 = ((PyObject *)__pyx_t_1);
   __Pyx_INCREF(__pyx_t_2);
@@ -4923,7 +5007,7 @@ static struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection
   __pyx_v_res = ((struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection *)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":73
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":75
  *     cdef Connection create(ydb_c.YdbConnection* connection_handler):
  *         res = <Connection>Connection.__new__(Connection) # create instance without call __init__
  *         res._closed = False             # <<<<<<<<<<<<<<
@@ -4936,7 +5020,7 @@ static struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection
   __Pyx_DECREF((PyObject *)__pyx_v_res->_closed);
   __pyx_v_res->_closed = ((PyBoolObject *)Py_False);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":74
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":76
  *         res = <Connection>Connection.__new__(Connection) # create instance without call __init__
  *         res._closed = False
  *         res._connection = connection_handler             # <<<<<<<<<<<<<<
@@ -4945,29 +5029,29 @@ static struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection
  */
   __pyx_v_res->_connection = __pyx_v_connection_handler;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":75
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":77
  *         res._closed = False
  *         res._connection = connection_handler
  *         print("inited {0:x}", <unsigned long> res._connection)             # <<<<<<<<<<<<<<
  *         return res
  * 
  */
-  __pyx_t_2 = __Pyx_PyInt_From_unsigned_long(((unsigned long)__pyx_v_res->_connection)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 75, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_unsigned_long(((unsigned long)__pyx_v_res->_connection)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 77, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 75, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 77, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_kp_u_inited_0_x);
   __Pyx_GIVEREF(__pyx_kp_u_inited_0_x);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_kp_u_inited_0_x)) __PYX_ERR(0, 75, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_kp_u_inited_0_x)) __PYX_ERR(0, 77, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_2);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_t_2)) __PYX_ERR(0, 75, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_t_2)) __PYX_ERR(0, 77, __pyx_L1_error);
   __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 75, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 77, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":76
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":78
  *         res._connection = connection_handler
  *         print("inited {0:x}", <unsigned long> res._connection)
  *         return res             # <<<<<<<<<<<<<<
@@ -4979,7 +5063,7 @@ static struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection
   __pyx_r = __pyx_v_res;
   goto __pyx_L0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":71
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":73
  * 
  *     @staticmethod
  *     cdef Connection create(ydb_c.YdbConnection* connection_handler):             # <<<<<<<<<<<<<<
@@ -5000,12 +5084,12 @@ static struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection
   return __pyx_r;
 }
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":78
+/* "cython_ydb_extension/cython_ydb_extension.pyx":80
  *         return res
  * 
  *     def query(self, query: str)->Result:             # <<<<<<<<<<<<<<
  *         # print("rekby-1")
- *         query_bytes = query.encode()
+ *         query_bytes_py = query.encode()
  */
 
 /* Python wrapper */
@@ -5061,12 +5145,12 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 78, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 80, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "query") < 0)) __PYX_ERR(0, 78, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "query") < 0)) __PYX_ERR(0, 80, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
@@ -5077,7 +5161,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("query", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 78, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("query", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 80, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5091,7 +5175,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_query), (&PyUnicode_Type), 0, "query", 1))) __PYX_ERR(0, 78, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_query), (&PyUnicode_Type), 0, "query", 1))) __PYX_ERR(0, 80, __pyx_L1_error)
   __pyx_r = __pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connection_2query(((struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection *)__pyx_v_self), __pyx_v_query);
 
   /* function exit code */
@@ -5110,7 +5194,8 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
 }
 
 static struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Result *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connection_2query(struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection *__pyx_v_self, PyObject *__pyx_v_query) {
-  PyObject *__pyx_v_query_bytes = NULL;
+  PyObject *__pyx_v_query_bytes_py = NULL;
+  char *__pyx_v_query_bytes;
   struct YdbResult *__pyx_v_res_c;
   struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Result *__pyx_v_res = NULL;
   struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Result *__pyx_r = NULL;
@@ -5122,63 +5207,108 @@ static struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Result *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("query", 1);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":80
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":82
  *     def query(self, query: str)->Result:
  *         # print("rekby-1")
- *         query_bytes = query.encode()             # <<<<<<<<<<<<<<
+ *         query_bytes_py = query.encode()             # <<<<<<<<<<<<<<
+ *         cdef char* query_bytes = query_bytes_py
  *         # print("query on connection ", <unsigned long> self._connection)
- *         res_c = ydb_c.ydb_query(self._connection, query_bytes)
  */
-  __pyx_t_1 = PyUnicode_AsEncodedString(__pyx_v_query, NULL, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 80, __pyx_L1_error)
+  __pyx_t_1 = PyUnicode_AsEncodedString(__pyx_v_query, NULL, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 82, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_v_query_bytes = __pyx_t_1;
+  __pyx_v_query_bytes_py = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":82
- *         query_bytes = query.encode()
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":83
+ *         # print("rekby-1")
+ *         query_bytes_py = query.encode()
+ *         cdef char* query_bytes = query_bytes_py             # <<<<<<<<<<<<<<
  *         # print("query on connection ", <unsigned long> self._connection)
- *         res_c = ydb_c.ydb_query(self._connection, query_bytes)             # <<<<<<<<<<<<<<
+ *         with nogil:
+ */
+  __pyx_t_2 = __Pyx_PyObject_AsWritableString(__pyx_v_query_bytes_py); if (unlikely((!__pyx_t_2) && PyErr_Occurred())) __PYX_ERR(0, 83, __pyx_L1_error)
+  __pyx_v_query_bytes = __pyx_t_2;
+
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":85
+ *         cdef char* query_bytes = query_bytes_py
+ *         # print("query on connection ", <unsigned long> self._connection)
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             res_c = ydb_c.ydb_query(self._connection, query_bytes)
+ *         # print("rekby-2", res_c != NULL)
+ */
+  {
+      #ifdef WITH_THREAD
+      PyThreadState *_save;
+      _save = NULL;
+      Py_UNBLOCK_THREADS
+      __Pyx_FastGIL_Remember();
+      #endif
+      /*try:*/ {
+
+        /* "cython_ydb_extension/cython_ydb_extension.pyx":86
+ *         # print("query on connection ", <unsigned long> self._connection)
+ *         with nogil:
+ *             res_c = ydb_c.ydb_query(self._connection, query_bytes)             # <<<<<<<<<<<<<<
  *         # print("rekby-2", res_c != NULL)
  *         res = Result.create(res_c)
  */
-  __pyx_t_2 = __Pyx_PyObject_AsWritableString(__pyx_v_query_bytes); if (unlikely((!__pyx_t_2) && PyErr_Occurred())) __PYX_ERR(0, 82, __pyx_L1_error)
-  __pyx_v_res_c = ydb_query(__pyx_v_self->_connection, __pyx_t_2);
+        __pyx_v_res_c = ydb_query(__pyx_v_self->_connection, __pyx_v_query_bytes);
+      }
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":84
- *         res_c = ydb_c.ydb_query(self._connection, query_bytes)
+      /* "cython_ydb_extension/cython_ydb_extension.pyx":85
+ *         cdef char* query_bytes = query_bytes_py
+ *         # print("query on connection ", <unsigned long> self._connection)
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             res_c = ydb_c.ydb_query(self._connection, query_bytes)
+ *         # print("rekby-2", res_c != NULL)
+ */
+      /*finally:*/ {
+        /*normal exit:*/{
+          #ifdef WITH_THREAD
+          __Pyx_FastGIL_Forget();
+          Py_BLOCK_THREADS
+          #endif
+          goto __pyx_L5;
+        }
+        __pyx_L5:;
+      }
+  }
+
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":88
+ *             res_c = ydb_c.ydb_query(self._connection, query_bytes)
  *         # print("rekby-2", res_c != NULL)
  *         res = Result.create(res_c)             # <<<<<<<<<<<<<<
  *         # print("rekby-2.1", res_c != NULL)
  *         res.wait()
  */
-  __pyx_t_1 = ((PyObject *)__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_create(__pyx_v_res_c)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 84, __pyx_L1_error)
+  __pyx_t_1 = ((PyObject *)__pyx_f_20cython_ydb_extension_20cython_ydb_extension_6Result_create(__pyx_v_res_c)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 88, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_res = ((struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Result *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":86
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":90
  *         res = Result.create(res_c)
  *         # print("rekby-2.1", res_c != NULL)
  *         res.wait()             # <<<<<<<<<<<<<<
  *         # print("rekby-2.2", res_c != NULL)
  * 
  */
-  __pyx_t_1 = ((struct __pyx_vtabstruct_20cython_ydb_extension_20cython_ydb_extension_Result *)__pyx_v_res->__pyx_vtab)->wait(__pyx_v_res, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 86, __pyx_L1_error)
+  __pyx_t_1 = ((struct __pyx_vtabstruct_20cython_ydb_extension_20cython_ydb_extension_Result *)__pyx_v_res->__pyx_vtab)->wait(__pyx_v_res, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 90, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":89
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":93
  *         # print("rekby-2.2", res_c != NULL)
  * 
  *         res._ensure_no_errors()             # <<<<<<<<<<<<<<
  * 
  *         return res
  */
-  __pyx_t_1 = ((struct __pyx_vtabstruct_20cython_ydb_extension_20cython_ydb_extension_Result *)__pyx_v_res->__pyx_vtab)->_ensure_no_errors(__pyx_v_res); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 89, __pyx_L1_error)
+  __pyx_t_1 = ((struct __pyx_vtabstruct_20cython_ydb_extension_20cython_ydb_extension_Result *)__pyx_v_res->__pyx_vtab)->_ensure_no_errors(__pyx_v_res); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 93, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":91
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":95
  *         res._ensure_no_errors()
  * 
  *         return res             # <<<<<<<<<<<<<<
@@ -5190,12 +5320,12 @@ static struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Result *__
   __pyx_r = __pyx_v_res;
   goto __pyx_L0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":78
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":80
  *         return res
  * 
  *     def query(self, query: str)->Result:             # <<<<<<<<<<<<<<
  *         # print("rekby-1")
- *         query_bytes = query.encode()
+ *         query_bytes_py = query.encode()
  */
 
   /* function exit code */
@@ -5204,14 +5334,14 @@ static struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Result *__
   __Pyx_AddTraceback("cython_ydb_extension.cython_ydb_extension.Connection.query", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
-  __Pyx_XDECREF(__pyx_v_query_bytes);
+  __Pyx_XDECREF(__pyx_v_query_bytes_py);
   __Pyx_XDECREF((PyObject *)__pyx_v_res);
   __Pyx_XGIVEREF((PyObject *)__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":94
+/* "cython_ydb_extension/cython_ydb_extension.pyx":98
  * 
  * 
  *     def close(self):             # <<<<<<<<<<<<<<
@@ -5271,17 +5401,17 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connec
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("close", 1);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":95
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":99
  * 
  *     def close(self):
  *         if self._closed:             # <<<<<<<<<<<<<<
  *             return
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(((PyObject *)__pyx_v_self->_closed)); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 95, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(((PyObject *)__pyx_v_self->_closed)); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 99, __pyx_L1_error)
   if (__pyx_t_1) {
 
-    /* "cython_ydb_extension/cython_ydb_extension.pyx":96
+    /* "cython_ydb_extension/cython_ydb_extension.pyx":100
  *     def close(self):
  *         if self._closed:
  *             return             # <<<<<<<<<<<<<<
@@ -5292,7 +5422,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connec
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "cython_ydb_extension/cython_ydb_extension.pyx":95
+    /* "cython_ydb_extension/cython_ydb_extension.pyx":99
  * 
  *     def close(self):
  *         if self._closed:             # <<<<<<<<<<<<<<
@@ -5301,7 +5431,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connec
  */
   }
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":98
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":102
  *             return
  * 
  *         self._closed = True             # <<<<<<<<<<<<<<
@@ -5314,29 +5444,29 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connec
   __Pyx_DECREF((PyObject *)__pyx_v_self->_closed);
   __pyx_v_self->_closed = ((PyBoolObject *)Py_True);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":99
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":103
  * 
  *         self._closed = True
  *         print("closing {0:x}", <unsigned long> self._connection)             # <<<<<<<<<<<<<<
  *         ydb_c.ydb_connect_free(self._connection)
  * 
  */
-  __pyx_t_2 = __Pyx_PyInt_From_unsigned_long(((unsigned long)__pyx_v_self->_connection)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 99, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_unsigned_long(((unsigned long)__pyx_v_self->_connection)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 103, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 99, __pyx_L1_error)
+  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 103, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_kp_u_closing_0_x);
   __Pyx_GIVEREF(__pyx_kp_u_closing_0_x);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_kp_u_closing_0_x)) __PYX_ERR(0, 99, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_kp_u_closing_0_x)) __PYX_ERR(0, 103, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_2);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_3, 1, __pyx_t_2)) __PYX_ERR(0, 99, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_3, 1, __pyx_t_2)) __PYX_ERR(0, 103, __pyx_L1_error);
   __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_t_3, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 99, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_t_3, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 103, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":100
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":104
  *         self._closed = True
  *         print("closing {0:x}", <unsigned long> self._connection)
  *         ydb_c.ydb_connect_free(self._connection)             # <<<<<<<<<<<<<<
@@ -5345,7 +5475,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connec
  */
   ydb_connect_free(__pyx_v_self->_connection);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":94
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":98
  * 
  * 
  *     def close(self):             # <<<<<<<<<<<<<<
@@ -5367,7 +5497,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connec
   return __pyx_r;
 }
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":102
+/* "cython_ydb_extension/cython_ydb_extension.pyx":106
  *         ydb_c.ydb_connect_free(self._connection)
  * 
  *     def __del__(self):             # <<<<<<<<<<<<<<
@@ -5399,14 +5529,14 @@ static void __pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connection_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__del__", 1);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":103
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":107
  * 
  *     def __del__(self):
  *         self.close()             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_close); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 103, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_close); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 107, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -5426,13 +5556,13 @@ static void __pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connection_
     PyObject *__pyx_callargs[2] = {__pyx_t_3, NULL};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 103, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 107, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":102
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":106
  *         ydb_c.ydb_connect_free(self._connection)
  * 
  *     def __del__(self):             # <<<<<<<<<<<<<<
@@ -5665,7 +5795,7 @@ static PyObject *__pyx_pf_20cython_ydb_extension_20cython_ydb_extension_10Connec
   return __pyx_r;
 }
 
-/* "cython_ydb_extension/cython_ydb_extension.pyx":106
+/* "cython_ydb_extension/cython_ydb_extension.pyx":110
  * 
  * 
  * def open(str connection_string) -> Connection:             # <<<<<<<<<<<<<<
@@ -5726,12 +5856,12 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 106, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 110, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "open") < 0)) __PYX_ERR(0, 106, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "open") < 0)) __PYX_ERR(0, 110, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
@@ -5742,7 +5872,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("open", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 106, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("open", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 110, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5756,7 +5886,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_connection_string), (&PyUnicode_Type), 1, "connection_string", 1))) __PYX_ERR(0, 106, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_connection_string), (&PyUnicode_Type), 1, "connection_string", 1))) __PYX_ERR(0, 110, __pyx_L1_error)
   __pyx_r = __pyx_pf_20cython_ydb_extension_20cython_ydb_extension_open(__pyx_self, __pyx_v_connection_string);
 
   /* function exit code */
@@ -5788,86 +5918,144 @@ static struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("open", 1);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":107
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":111
  * 
  * def open(str connection_string) -> Connection:
  *     connection_string_bytes = connection_string.encode()             # <<<<<<<<<<<<<<
  *     cdef char *connection_string_bytes_pointer = connection_string_bytes
- *     connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
+ *     with nogil:
  */
   if (unlikely(__pyx_v_connection_string == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "encode");
-    __PYX_ERR(0, 107, __pyx_L1_error)
+    __PYX_ERR(0, 111, __pyx_L1_error)
   }
-  __pyx_t_1 = PyUnicode_AsEncodedString(__pyx_v_connection_string, NULL, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __pyx_t_1 = PyUnicode_AsEncodedString(__pyx_v_connection_string, NULL, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 111, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_connection_string_bytes = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":108
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":112
  * def open(str connection_string) -> Connection:
  *     connection_string_bytes = connection_string.encode()
  *     cdef char *connection_string_bytes_pointer = connection_string_bytes             # <<<<<<<<<<<<<<
- *     connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
- *     if ydb_c.ydb_connect_wait(connection_handler) != 0:
+ *     with nogil:
+ *         connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
  */
-  __pyx_t_2 = __Pyx_PyObject_AsWritableString(__pyx_v_connection_string_bytes); if (unlikely((!__pyx_t_2) && PyErr_Occurred())) __PYX_ERR(0, 108, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_AsWritableString(__pyx_v_connection_string_bytes); if (unlikely((!__pyx_t_2) && PyErr_Occurred())) __PYX_ERR(0, 112, __pyx_L1_error)
   __pyx_v_connection_string_bytes_pointer = __pyx_t_2;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":109
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":113
  *     connection_string_bytes = connection_string.encode()
  *     cdef char *connection_string_bytes_pointer = connection_string_bytes
- *     connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)             # <<<<<<<<<<<<<<
- *     if ydb_c.ydb_connect_wait(connection_handler) != 0:
- *         raise Exception("Ydb connection error")
+ *     with nogil:             # <<<<<<<<<<<<<<
+ *         connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
+ *         if ydb_c.ydb_connect_wait(connection_handler) != 0:
  */
-  __pyx_v_connection_handler = ydb_connect(__pyx_v_connection_string_bytes_pointer);
+  {
+      #ifdef WITH_THREAD
+      PyThreadState *_save;
+      _save = NULL;
+      Py_UNBLOCK_THREADS
+      __Pyx_FastGIL_Remember();
+      #endif
+      /*try:*/ {
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":110
+        /* "cython_ydb_extension/cython_ydb_extension.pyx":114
  *     cdef char *connection_string_bytes_pointer = connection_string_bytes
- *     connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
- *     if ydb_c.ydb_connect_wait(connection_handler) != 0:             # <<<<<<<<<<<<<<
- *         raise Exception("Ydb connection error")
+ *     with nogil:
+ *         connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)             # <<<<<<<<<<<<<<
+ *         if ydb_c.ydb_connect_wait(connection_handler) != 0:
+ *             raise Exception("Ydb connection error")
+ */
+        __pyx_v_connection_handler = ydb_connect(__pyx_v_connection_string_bytes_pointer);
+
+        /* "cython_ydb_extension/cython_ydb_extension.pyx":115
+ *     with nogil:
+ *         connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
+ *         if ydb_c.ydb_connect_wait(connection_handler) != 0:             # <<<<<<<<<<<<<<
+ *             raise Exception("Ydb connection error")
  * 
  */
-  __pyx_t_3 = (ydb_connect_wait(__pyx_v_connection_handler) != 0);
-  if (unlikely(__pyx_t_3)) {
+        __pyx_t_3 = (ydb_connect_wait(__pyx_v_connection_handler) != 0);
+        if (unlikely(__pyx_t_3)) {
 
-    /* "cython_ydb_extension/cython_ydb_extension.pyx":111
- *     connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
- *     if ydb_c.ydb_connect_wait(connection_handler) != 0:
- *         raise Exception("Ydb connection error")             # <<<<<<<<<<<<<<
+          /* "cython_ydb_extension/cython_ydb_extension.pyx":116
+ *         connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
+ *         if ydb_c.ydb_connect_wait(connection_handler) != 0:
+ *             raise Exception("Ydb connection error")             # <<<<<<<<<<<<<<
  * 
  *     return Connection.create(connection_handler)
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 111, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_Raise(__pyx_t_1, 0, 0, 0);
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __PYX_ERR(0, 111, __pyx_L1_error)
+          {
+              #ifdef WITH_THREAD
+              PyGILState_STATE __pyx_gilstate_save = __Pyx_PyGILState_Ensure();
+              #endif
+              /*try:*/ {
+                __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 116, __pyx_L8_error)
+                __Pyx_GOTREF(__pyx_t_1);
+                __Pyx_Raise(__pyx_t_1, 0, 0, 0);
+                __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                __PYX_ERR(0, 116, __pyx_L8_error)
+              }
+              /*finally:*/ {
+                __pyx_L8_error: {
+                  #ifdef WITH_THREAD
+                  __Pyx_PyGILState_Release(__pyx_gilstate_save);
+                  #endif
+                  goto __pyx_L4_error;
+                }
+              }
+          }
 
-    /* "cython_ydb_extension/cython_ydb_extension.pyx":110
- *     cdef char *connection_string_bytes_pointer = connection_string_bytes
- *     connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
- *     if ydb_c.ydb_connect_wait(connection_handler) != 0:             # <<<<<<<<<<<<<<
- *         raise Exception("Ydb connection error")
+          /* "cython_ydb_extension/cython_ydb_extension.pyx":115
+ *     with nogil:
+ *         connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
+ *         if ydb_c.ydb_connect_wait(connection_handler) != 0:             # <<<<<<<<<<<<<<
+ *             raise Exception("Ydb connection error")
  * 
  */
+        }
+      }
+
+      /* "cython_ydb_extension/cython_ydb_extension.pyx":113
+ *     connection_string_bytes = connection_string.encode()
+ *     cdef char *connection_string_bytes_pointer = connection_string_bytes
+ *     with nogil:             # <<<<<<<<<<<<<<
+ *         connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
+ *         if ydb_c.ydb_connect_wait(connection_handler) != 0:
+ */
+      /*finally:*/ {
+        /*normal exit:*/{
+          #ifdef WITH_THREAD
+          __Pyx_FastGIL_Forget();
+          Py_BLOCK_THREADS
+          #endif
+          goto __pyx_L5;
+        }
+        __pyx_L4_error: {
+          #ifdef WITH_THREAD
+          __Pyx_FastGIL_Forget();
+          Py_BLOCK_THREADS
+          #endif
+          goto __pyx_L1_error;
+        }
+        __pyx_L5:;
+      }
   }
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":113
- *         raise Exception("Ydb connection error")
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":118
+ *             raise Exception("Ydb connection error")
  * 
  *     return Connection.create(connection_handler)             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF((PyObject *)__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_20cython_ydb_extension_20cython_ydb_extension_10Connection_create(__pyx_v_connection_handler)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 113, __pyx_L1_error)
+  __pyx_t_1 = ((PyObject *)__pyx_f_20cython_ydb_extension_20cython_ydb_extension_10Connection_create(__pyx_v_connection_handler)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 118, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = ((struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection *)__pyx_t_1);
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":106
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":110
  * 
  * 
  * def open(str connection_string) -> Connection:             # <<<<<<<<<<<<<<
@@ -6309,6 +6497,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_pyx_vtable, __pyx_k_pyx_vtable, sizeof(__pyx_k_pyx_vtable), 0, 0, 1, 1},
     {&__pyx_n_s_query, __pyx_k_query, sizeof(__pyx_k_query), 0, 0, 1, 1},
     {&__pyx_n_s_query_bytes, __pyx_k_query_bytes, sizeof(__pyx_k_query_bytes), 0, 0, 1, 1},
+    {&__pyx_n_s_query_bytes_py, __pyx_k_query_bytes_py, sizeof(__pyx_k_query_bytes_py), 0, 0, 1, 1},
     {&__pyx_n_s_reduce, __pyx_k_reduce, sizeof(__pyx_k_reduce), 0, 0, 1, 1},
     {&__pyx_n_s_reduce_cython, __pyx_k_reduce_cython, sizeof(__pyx_k_reduce_cython), 0, 0, 1, 1},
     {&__pyx_n_s_reduce_ex, __pyx_k_reduce_ex, sizeof(__pyx_k_reduce_ex), 0, 0, 1, 1},
@@ -6335,7 +6524,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
 /* #### Code section: cached_builtins ### */
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
   __pyx_builtin_TypeError = __Pyx_GetBuiltinName(__pyx_n_s_TypeError); if (!__pyx_builtin_TypeError) __PYX_ERR(0, 10, __pyx_L1_error)
-  __pyx_builtin_print = __Pyx_GetBuiltinName(__pyx_n_s_print); if (!__pyx_builtin_print) __PYX_ERR(0, 75, __pyx_L1_error)
+  __pyx_builtin_print = __Pyx_GetBuiltinName(__pyx_n_s_print); if (!__pyx_builtin_print) __PYX_ERR(0, 77, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -6357,25 +6546,25 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":37
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":39
  *     cdef _ensure_no_errors(self):
  *         if ydb_c.ydb_result_has_errors(self._result) != 0:
  *             raise Exception("Ydb result has errors.")             # <<<<<<<<<<<<<<
  * 
  *     def to_results(self):
  */
-  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_u_Ydb_result_has_errors); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(0, 37, __pyx_L1_error)
+  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_u_Ydb_result_has_errors); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(0, 39, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__2);
   __Pyx_GIVEREF(__pyx_tuple__2);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":111
- *     connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
- *     if ydb_c.ydb_connect_wait(connection_handler) != 0:
- *         raise Exception("Ydb connection error")             # <<<<<<<<<<<<<<
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":116
+ *         connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
+ *         if ydb_c.ydb_connect_wait(connection_handler) != 0:
+ *             raise Exception("Ydb connection error")             # <<<<<<<<<<<<<<
  * 
  *     return Connection.create(connection_handler)
  */
-  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_u_Ydb_connection_error); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 111, __pyx_L1_error)
+  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_u_Ydb_connection_error); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 116, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
 
@@ -6391,35 +6580,35 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__4);
   __pyx_codeobj__5 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_close, 20, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__5)) __PYX_ERR(0, 20, __pyx_L1_error)
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":31
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":32
  *         self.close()
  * 
  *     cpdef wait(self):             # <<<<<<<<<<<<<<
  *         # print("wait result", <unsigned long> self._result)
- *         ydb_c.ydb_result_wait(self._result)
+ *         with nogil:
  */
-  __pyx_codeobj__6 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_wait, 31, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__6)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_codeobj__6 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_wait, 32, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__6)) __PYX_ERR(0, 32, __pyx_L1_error)
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":39
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":41
  *             raise Exception("Ydb result has errors.")
  * 
  *     def to_results(self):             # <<<<<<<<<<<<<<
  *         cdef size_t bufSize = 1024
  *         cdef char* mem = NULL
  */
-  __pyx_tuple__7 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_bufSize, __pyx_n_s_mem, __pyx_n_s_results, __pyx_n_s_result, __pyx_n_s_row); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 39, __pyx_L1_error)
+  __pyx_tuple__7 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_bufSize, __pyx_n_s_mem, __pyx_n_s_results, __pyx_n_s_result, __pyx_n_s_row); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 41, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__7);
   __Pyx_GIVEREF(__pyx_tuple__7);
-  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_to_results, 39, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 39, __pyx_L1_error)
+  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_to_results, 41, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 41, __pyx_L1_error)
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":58
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":60
  *                 PyMem_Free(mem)
  * 
  *     cpdef next_row(self):             # <<<<<<<<<<<<<<
  *         ydb_c.ydb_result_next_row(self._result)
  *         self._ensure_no_errors()
  */
-  __pyx_codeobj__9 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_next_row, 58, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__9)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_codeobj__9 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_next_row, 60, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__9)) __PYX_ERR(0, 60, __pyx_L1_error)
 
   /* "(tree fragment)":1
  * def __reduce_cython__(self):             # <<<<<<<<<<<<<<
@@ -6439,26 +6628,26 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__11);
   __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_stringsource, __pyx_n_s_setstate_cython, 3, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(2, 3, __pyx_L1_error)
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":78
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":80
  *         return res
  * 
  *     def query(self, query: str)->Result:             # <<<<<<<<<<<<<<
  *         # print("rekby-1")
- *         query_bytes = query.encode()
+ *         query_bytes_py = query.encode()
  */
-  __pyx_tuple__13 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_query, __pyx_n_s_query_bytes, __pyx_n_s_res_c, __pyx_n_s_res); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 78, __pyx_L1_error)
+  __pyx_tuple__13 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_query, __pyx_n_s_query_bytes_py, __pyx_n_s_query_bytes, __pyx_n_s_res_c, __pyx_n_s_res); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
-  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_query, 78, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 78, __pyx_L1_error)
+  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_query, 80, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 80, __pyx_L1_error)
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":94
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":98
  * 
  * 
  *     def close(self):             # <<<<<<<<<<<<<<
  *         if self._closed:
  *             return
  */
-  __pyx_codeobj__15 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_close, 94, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__15)) __PYX_ERR(0, 94, __pyx_L1_error)
+  __pyx_codeobj__15 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_close, 98, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__15)) __PYX_ERR(0, 98, __pyx_L1_error)
 
   /* "(tree fragment)":1
  * def __reduce_cython__(self):             # <<<<<<<<<<<<<<
@@ -6475,17 +6664,17 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  */
   __pyx_codeobj__17 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_stringsource, __pyx_n_s_setstate_cython, 3, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__17)) __PYX_ERR(2, 3, __pyx_L1_error)
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":106
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":110
  * 
  * 
  * def open(str connection_string) -> Connection:             # <<<<<<<<<<<<<<
  *     connection_string_bytes = connection_string.encode()
  *     cdef char *connection_string_bytes_pointer = connection_string_bytes
  */
-  __pyx_tuple__18 = PyTuple_Pack(4, __pyx_n_s_connection_string, __pyx_n_s_connection_string_bytes, __pyx_n_s_connection_string_bytes_pointer, __pyx_n_s_connection_handler); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 106, __pyx_L1_error)
+  __pyx_tuple__18 = PyTuple_Pack(4, __pyx_n_s_connection_string, __pyx_n_s_connection_string_bytes, __pyx_n_s_connection_string_bytes_pointer, __pyx_n_s_connection_handler); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__18);
   __Pyx_GIVEREF(__pyx_tuple__18);
-  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_open, 106, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 106, __pyx_L1_error)
+  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_ydb_extension_cython_ydb, __pyx_n_s_open, 110, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -6581,15 +6770,15 @@ static int __Pyx_modinit_type_init_code(void) {
   __pyx_vtabptr_20cython_ydb_extension_20cython_ydb_extension_Connection = &__pyx_vtable_20cython_ydb_extension_20cython_ydb_extension_Connection;
   __pyx_vtable_20cython_ydb_extension_20cython_ydb_extension_Connection.create = (struct __pyx_obj_20cython_ydb_extension_20cython_ydb_extension_Connection *(*)(struct YdbConnection *))__pyx_f_20cython_ydb_extension_20cython_ydb_extension_10Connection_create;
   #if CYTHON_USE_TYPE_SPECS
-  __pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection = (PyTypeObject *) __Pyx_PyType_FromModuleAndSpec(__pyx_m, &__pyx_type_20cython_ydb_extension_20cython_ydb_extension_Connection_spec, NULL); if (unlikely(!__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection)) __PYX_ERR(0, 63, __pyx_L1_error)
-  if (__Pyx_fix_up_extension_type_from_spec(&__pyx_type_20cython_ydb_extension_20cython_ydb_extension_Connection_spec, __pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
+  __pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection = (PyTypeObject *) __Pyx_PyType_FromModuleAndSpec(__pyx_m, &__pyx_type_20cython_ydb_extension_20cython_ydb_extension_Connection_spec, NULL); if (unlikely(!__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection)) __PYX_ERR(0, 65, __pyx_L1_error)
+  if (__Pyx_fix_up_extension_type_from_spec(&__pyx_type_20cython_ydb_extension_20cython_ydb_extension_Connection_spec, __pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
   #else
   __pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection = &__pyx_type_20cython_ydb_extension_20cython_ydb_extension_Connection;
   #endif
   #if !CYTHON_COMPILING_IN_LIMITED_API
   #endif
   #if !CYTHON_USE_TYPE_SPECS
-  if (__Pyx_PyType_Ready(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
+  if (__Pyx_PyType_Ready(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
   #endif
   #if PY_MAJOR_VERSION < 3
   __pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection->tp_print = 0;
@@ -6599,13 +6788,13 @@ static int __Pyx_modinit_type_init_code(void) {
     __pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection->tp_getattro = __Pyx_PyObject_GenericGetAttr;
   }
   #endif
-  if (__Pyx_SetVtable(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection, __pyx_vtabptr_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
+  if (__Pyx_SetVtable(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection, __pyx_vtabptr_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
   #if !CYTHON_COMPILING_IN_LIMITED_API
-  if (__Pyx_MergeVtables(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
+  if (__Pyx_MergeVtables(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
   #endif
-  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_Connection, (PyObject *) __pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
+  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_Connection, (PyObject *) __pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
   #if !CYTHON_COMPILING_IN_LIMITED_API
-  if (__Pyx_setup_reduce((PyObject *) __pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject *) __pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
   #endif
   __Pyx_RefNannyFinishContext();
   return 0;
@@ -6958,42 +7147,42 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   PyType_Modified(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Result);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":31
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":32
  *         self.close()
  * 
  *     cpdef wait(self):             # <<<<<<<<<<<<<<
  *         # print("wait result", <unsigned long> self._result)
- *         ydb_c.ydb_result_wait(self._result)
+ *         with nogil:
  */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_6Result_7wait, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_Result_wait, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__6)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_6Result_7wait, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_Result_wait, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__6)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Result, __pyx_n_s_wait, __pyx_t_2) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Result, __pyx_n_s_wait, __pyx_t_2) < 0) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   PyType_Modified(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Result);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":39
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":41
  *             raise Exception("Ydb result has errors.")
  * 
  *     def to_results(self):             # <<<<<<<<<<<<<<
  *         cdef size_t bufSize = 1024
  *         cdef char* mem = NULL
  */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_6Result_9to_results, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_Result_to_results, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__8)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 39, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_6Result_9to_results, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_Result_to_results, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__8)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 41, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Result, __pyx_n_s_to_results, __pyx_t_2) < 0) __PYX_ERR(0, 39, __pyx_L1_error)
+  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Result, __pyx_n_s_to_results, __pyx_t_2) < 0) __PYX_ERR(0, 41, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   PyType_Modified(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Result);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":58
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":60
  *                 PyMem_Free(mem)
  * 
  *     cpdef next_row(self):             # <<<<<<<<<<<<<<
  *         ydb_c.ydb_result_next_row(self._result)
  *         self._ensure_no_errors()
  */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_6Result_11next_row, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_Result_next_row, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__9)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_6Result_11next_row, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_Result_next_row, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__9)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 60, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Result, __pyx_n_s_next_row, __pyx_t_2) < 0) __PYX_ERR(0, 58, __pyx_L1_error)
+  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Result, __pyx_n_s_next_row, __pyx_t_2) < 0) __PYX_ERR(0, 60, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   PyType_Modified(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Result);
 
@@ -7018,35 +7207,35 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_setstate_cython, __pyx_t_2) < 0) __PYX_ERR(2, 3, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":78
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":80
  *         return res
  * 
  *     def query(self, query: str)->Result:             # <<<<<<<<<<<<<<
  *         # print("rekby-1")
- *         query_bytes = query.encode()
+ *         query_bytes_py = query.encode()
  */
-  __pyx_t_2 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 78, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_query, __pyx_n_s_str) < 0) __PYX_ERR(0, 78, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_return, __pyx_n_s_Result) < 0) __PYX_ERR(0, 78, __pyx_L1_error)
-  __pyx_t_3 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_10Connection_3query, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_Connection_query, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__14)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 78, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_query, __pyx_n_s_str) < 0) __PYX_ERR(0, 80, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_return, __pyx_n_s_Result) < 0) __PYX_ERR(0, 80, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_10Connection_3query, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_Connection_query, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__14)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_CyFunction_SetAnnotationsDict(__pyx_t_3, __pyx_t_2);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection, __pyx_n_s_query, __pyx_t_3) < 0) __PYX_ERR(0, 78, __pyx_L1_error)
+  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection, __pyx_n_s_query, __pyx_t_3) < 0) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   PyType_Modified(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection);
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":94
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":98
  * 
  * 
  *     def close(self):             # <<<<<<<<<<<<<<
  *         if self._closed:
  *             return
  */
-  __pyx_t_3 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_10Connection_5close, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_Connection_close, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__15)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 94, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_10Connection_5close, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_Connection_close, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__15)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection, __pyx_n_s_close, __pyx_t_3) < 0) __PYX_ERR(0, 94, __pyx_L1_error)
+  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection, __pyx_n_s_close, __pyx_t_3) < 0) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   PyType_Modified(__pyx_ptype_20cython_ydb_extension_20cython_ydb_extension_Connection);
 
@@ -7071,21 +7260,21 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_setstate_cython, __pyx_t_3) < 0) __PYX_ERR(2, 3, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "cython_ydb_extension/cython_ydb_extension.pyx":106
+  /* "cython_ydb_extension/cython_ydb_extension.pyx":110
  * 
  * 
  * def open(str connection_string) -> Connection:             # <<<<<<<<<<<<<<
  *     connection_string_bytes = connection_string.encode()
  *     cdef char *connection_string_bytes_pointer = connection_string_bytes
  */
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 106, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_return, __pyx_n_s_Connection) < 0) __PYX_ERR(0, 106, __pyx_L1_error)
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_1open, 0, __pyx_n_s_open, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__19)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 106, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_return, __pyx_n_s_Connection) < 0) __PYX_ERR(0, 110, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_20cython_ydb_extension_20cython_ydb_extension_1open, 0, __pyx_n_s_open, NULL, __pyx_n_s_cython_ydb_extension_cython_ydb_2, __pyx_d, ((PyObject *)__pyx_codeobj__19)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_CyFunction_SetAnnotationsDict(__pyx_t_2, __pyx_t_3);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_open, __pyx_t_2) < 0) __PYX_ERR(0, 106, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_open, __pyx_t_2) < 0) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "cython_ydb_extension/cython_ydb_extension.pyx":1

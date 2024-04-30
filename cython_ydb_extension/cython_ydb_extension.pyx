@@ -23,14 +23,16 @@ cdef class Result:
 
         self._closed = True
         # print("closing result {0:x}", <unsigned long> self._result)
-        ydb_c.ydb_result_free(self._result)
+        with nogil:
+            ydb_c.ydb_result_free(self._result)
 
     def __del__(self):
         self.close()
 
     cpdef wait(self):
         # print("wait result", <unsigned long> self._result)
-        ydb_c.ydb_result_wait(self._result)
+        with nogil:
+            ydb_c.ydb_result_wait(self._result)
 
     cdef _ensure_no_errors(self):
         if ydb_c.ydb_result_has_errors(self._result) != 0:
@@ -77,9 +79,11 @@ cdef class Connection:
 
     def query(self, query: str)->Result:
         # print("rekby-1")
-        query_bytes = query.encode()
+        query_bytes_py = query.encode()
+        cdef char* query_bytes = query_bytes_py
         # print("query on connection ", <unsigned long> self._connection)
-        res_c = ydb_c.ydb_query(self._connection, query_bytes)
+        with nogil:
+            res_c = ydb_c.ydb_query(self._connection, query_bytes)
         # print("rekby-2", res_c != NULL)
         res = Result.create(res_c)
         # print("rekby-2.1", res_c != NULL)
@@ -106,8 +110,9 @@ cdef class Connection:
 def open(str connection_string) -> Connection:
     connection_string_bytes = connection_string.encode()
     cdef char *connection_string_bytes_pointer = connection_string_bytes
-    connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
-    if ydb_c.ydb_connect_wait(connection_handler) != 0:
-        raise Exception("Ydb connection error")
+    with nogil:
+        connection_handler = ydb_c.ydb_connect(connection_string_bytes_pointer)
+        if ydb_c.ydb_connect_wait(connection_handler) != 0:
+            raise Exception("Ydb connection error")
 
     return Connection.create(connection_handler)

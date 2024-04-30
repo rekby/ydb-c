@@ -175,7 +175,7 @@ def benchmark():
     driver.wait()
 
     query = "SELECT 'asd' as col"
-    conn.query(query)
+    print(conn.query(query))
 
     session = driver.table_client.session().create()
 

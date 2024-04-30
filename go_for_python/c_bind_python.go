@@ -18,8 +18,8 @@ import (
 // install pkg-config
 
 /*
-#cgo pkg-config: python-3.10
-#cgo LDFLAGS: -lpython3.10
+#cgo pkg-config: python-3.12
+#cgo LDFLAGS: -lpython3.12
 
 #include "c_bind_python.h"
 */

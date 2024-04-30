@@ -6,9 +6,9 @@ PyObject* python_connect(PyObject* self, PyObject* args);
 PyObject* ydb_python_start_reader(PyObject* self, PyObject* args);
 PyObject* ydb_python_read_batch(PyObject* self, PyObject* args);
 
-int _py_read_ulong_string_string(PyObject *args, ulong *lval, char **str1, size_t *str1Len, char **str2, size_t *str2Len);
+int _py_read_ulong_string_string(PyObject *args, unsigned long *lval, char **str1, size_t *str1Len, char **str2, size_t *str2Len);
 int _py_read_one_string_arg(PyObject *args, char **content, size_t *bytes_len);
-int _py_read_ulong(PyObject *args, ulong *val);
+int _py_read_ulong(PyObject *args, unsigned long *val);
 
 PyObject *_py_none();
 
@@ -29,7 +29,7 @@ typedef struct Message {
 } Message;
 
 typedef struct MessagesBatch {
-    ulong messages_count;
+    unsigned long messages_count;
     Message *messages;
 } MessagesBatch;
 

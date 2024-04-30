@@ -1,9 +1,11 @@
-all: cython_extension client_c_go_dynamic client_c_rust_dynamic go_headers rust_headers
+.PHONY: all cython_ydb_extension
+
+all: cython_ydb_extension client_c_go_dynamic client_c_rust_dynamic go_headers rust_headers
 
 in_progress: client_c_go_static rust_library_static client_c_rust_static
 
 clean:
-	rm -rf c_client/client_go_static c_client/client_go_dynamic go/_obj rust_ydb_client/target
+	rm -rf c_client/client_go_static c_client/client_go_dynamic go/_obj rust_ydb_client/target cython_extension/*.so
 
 client_c_go_static: go_library_static
 	gcc -o c_client/client_go_static c_client/client.c  -L go/_obj/ -l ydb_static
@@ -17,8 +19,11 @@ client_c_rust_dynamic: rust_library_dynamic
 client_c_rust_static: rust_library_static
 	gcc -o c_client/client_rust_static c_client/client.c  -L rust_ydb_client/target/x86_64-unknown-linux-musl/debug/ -l rust_ydb_client
 
-cython_extension: cython_extension/ydb_c.pxd cython_extension/ydb_c.pyx
-	cythonize -E CPATH=c_interface -3 -a -i cython_extension/ydb_c.pyx
+cython_ydb_extension: go_library_dynamic
+	cd cython_ydb_extension && rm -f *.so
+	cp go/_obj/libydb.so cython_ydb_extension/
+	CPATH=c_interface cythonize -3 cython_ydb_extension/cython_ydb_extension.pyx
+	cd cython_ydb_extension && python3 setup.py build_ext --inplace && mv cython_*.so cython_ydb_extension.so
 
 go_headers:
 	go tool cgo -srcdir=go/ --objdir=go/_obj --import_runtime_cgo=false -exportheader ydb_header.h c_bind.go

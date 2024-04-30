@@ -5,8 +5,9 @@
 
 __pycache__
 
-/cython_extension/*.so
-/cython_extension/*.html
+/cython_ydb_extension/build
+/cython_ydb_extension/*.so
+/cython_ydb_extension/*.html
 
 /c_client/client_go_dynamic
 /c_client/client_go_static

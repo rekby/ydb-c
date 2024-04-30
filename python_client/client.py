@@ -1,15 +1,16 @@
 import time
 import typing
 
-import ydb  # needs to be installed from pypi version 3.x
-
 from ctypes import *
 
 connectionString = "grpc://localhost:2136/?database=local"
 
+from os.path import dirname, abspath, join
+project_dir = dirname(dirname(abspath(__file__)))
+
 
 class CTypesConn:
-    l: typing.Any
+    lib: typing.Any
     handler: typing.Any
 
     _closed: bool
@@ -17,7 +18,7 @@ class CTypesConn:
     def __init__(self):
         self._closed = False
 
-        self.lib = CDLL("../go/_obj/libydb.so")
+        self.lib = CDLL(join(project_dir, "go", "_obj", "libydb.so"))
         # self.lib = CDLL("../rust_ydb_client/target/release/librust_ydb_client.dylib")
         lib = self.lib
         lib.ydb_connect.argtypes = [c_char_p]
@@ -77,6 +78,7 @@ class CTypesConn:
         lib.ydb_result_free(res)
         return rs
 
+
 class CModConn:
     l: typing.Any
     handler: typing.Any
@@ -135,8 +137,38 @@ class CModConn:
         return rs
 
 
+class CPythonConn:
+    _connection: typing.Any
+    _mod: typing.Any
+
+    def __init__(self) -> None:
+        import sys
+        from ctypes import cdll
+
+        libdir = project_dir + "/cython_ydb_extension/"
+
+        cdll.LoadLibrary(join(libdir, "libydb.so"))
+
+        print(libdir)
+        sys.path.append(libdir)
+
+        import cython_ydb_extension
+        self._mod = cython_ydb_extension
+
+    def connect(self):
+        self._connection = self._mod.open(connectionString)
+
+    def query(self, query):
+        res = self._connection.query(query)
+        # print("received py result", res)
+        return res.to_results()
+
+
 def benchmark():
-    conn = CTypesConn()
+    import ydb  # needs to be installed from pypi version 3.x
+
+    # conn = CTypesConn()
+    conn = CPythonConn()
     conn.connect()
 
     driver = ydb.Driver(connection_string=connectionString)
@@ -173,5 +205,8 @@ def benchmark():
     print(finish-start)
 
 
-cMod = CModConn()
-cMod.connect()
+# cMod = CPythonConn()
+# cMod.connect()
+# print("query result:", cMod.query("SELECT 'asd' as col"))
+
+benchmark()

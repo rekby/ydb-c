@@ -24,11 +24,11 @@ int _py_read_one_string_arg(PyObject *args, char **content, size_t *bytes_len){
     return PyArg_ParseTuple(args, "s#", content, bytes_len);
 };
 
-int _py_read_ulong_string_string(PyObject *args, ulong *lval, char **str1, size_t *str1Len, char **str2, size_t *str2Len){
+int _py_read_ulong_string_string(PyObject *args, unsigned long *lval, char **str1, size_t *str1Len, char **str2, size_t *str2Len){
 	return PyArg_ParseTuple(args, "ks#s#", lval, str1, str1Len, str2, str2Len);
 };
 
-int _py_read_ulong(PyObject *args, ulong *val){
+int _py_read_ulong(PyObject *args, unsigned long *val){
 	return PyArg_ParseTuple(args, "k", val);
 };
 
@@ -58,7 +58,7 @@ PyObject *convertCBatchToPython(MessagesBatch cBatch) {
     PyDict_SetItemString(pyBatch, "messages", pyMessages);
 
     // create message objects
-    for (ulong i = 0; i < cBatch.messages_count; i++){
+    for (unsigned long i = 0; i < cBatch.messages_count; i++){
         PyObject *pyMess = convertCMessageToPython(&cBatch.messages[i]);
         PyList_SetItem(pyMessages, i, pyMess);
     };

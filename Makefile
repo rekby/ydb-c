@@ -1,4 +1,4 @@
-all: go_for_python_library_dynamic client_c_go_dynamic client_c_rust_dynamic go_headers rust_headers
+all: cython_extension client_c_go_dynamic client_c_rust_dynamic go_headers rust_headers
 
 in_progress: client_c_go_static rust_library_static client_c_rust_static
 
@@ -16,6 +16,9 @@ client_c_rust_dynamic: rust_library_dynamic
 
 client_c_rust_static: rust_library_static
 	gcc -o c_client/client_rust_static c_client/client.c  -L rust_ydb_client/target/x86_64-unknown-linux-musl/debug/ -l rust_ydb_client
+
+cython_extension: cython_extension/ydb_c.pxd cython_extension/ydb_c.pyx
+	cythonize -E CPATH=c_interface -3 -a -i cython_extension/ydb_c.pyx
 
 go_headers:
 	go tool cgo -srcdir=go/ --objdir=go/_obj --import_runtime_cgo=false -exportheader ydb_header.h c_bind.go

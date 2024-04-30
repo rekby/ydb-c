@@ -1,6 +1,12 @@
 .idea
 .vscode
 *.out
+.DS_Store
+
+__pycache__
+
+/cython_extension/*.so
+/cython_extension/*.html
 
 /c_client/client_go_dynamic
 /c_client/client_go_static
@@ -11,3 +17,4 @@
 /rust_ydb_client/target/
 
 /debug.txt
+

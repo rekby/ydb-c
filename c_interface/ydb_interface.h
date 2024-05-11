@@ -1,5 +1,10 @@
+typedef struct YdbUserCustomData {} YdbUserCustomData;
+
 typedef struct YdbConnection {} YdbConnection;
 typedef struct YdbResult {} YdbResult;
+typedef struct YdbCallbackOptions {} YdbCallbackOptions;
+
+typedef void (YdbResultCallback)(YdbResult *result, YdbUserCustomData *data);
 
 extern struct YdbConnection* ydb_connect(char* connectionString);
 extern int ydb_connect_has_result(struct YdbConnection* connection);

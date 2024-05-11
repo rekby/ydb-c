@@ -1,10 +1,9 @@
 from . cimport ydb_c
-from cpython cimport bool
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 
 cdef class Result:
     cdef ydb_c.YdbResult* _result
-    cdef bool _closed
+    cdef bint _closed
 
     def __init__(self):
         raise TypeError('Cannot create instance from Python')
@@ -64,7 +63,7 @@ cdef class Result:
 
 cdef class Connection:
     cdef ydb_c.YdbConnection* _connection
-    cdef bool _closed
+    cdef bint _closed
 
     def __init__(self):
         raise TypeError('Cannot create instance from Python')

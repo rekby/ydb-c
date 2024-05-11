@@ -14,6 +14,7 @@ extern struct YdbResult* ydb_query(struct YdbConnection* connection, char* query
 extern void ydb_result_free(struct YdbResult* res);
 extern int ydb_result_has_result(struct YdbResult* res);
 extern void ydb_result_wait(struct YdbResult* res);
+extern int ydb_result_callback(struct YdbResult* res, YdbResultCallback *callback, YdbCallbackOptions *options /*should be NULL now*/, YdbUserCustomData *data);
 extern int ydb_result_has_errors(struct YdbResult* res);
 extern int ydb_result_next_readset(struct YdbResult* res);
 extern int ydb_result_next_row(struct YdbResult* res);

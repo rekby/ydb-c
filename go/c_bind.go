@@ -5,7 +5,13 @@ package main
 typedef struct YdbConnection {} YdbConnection;
 typedef struct YdbResult {} YdbResult;
 
+typedef struct YdbUserCustomData {} YdbUserCustomData;
+typedef void (*YdbResultCallback)(YdbResult *result, YdbUserCustomData *data);
+
+
 #include <string.h>
+
+void c_helper_call_ydb_result_callback(YdbResultCallback cb, YdbResult *result, YdbUserCustomData *data);
 */
 import "C"
 import (
@@ -112,6 +118,22 @@ func ydb_result_wait(res *C.struct_YdbResult) {
 		done = synced.done
 	})
 	<-done
+}
+
+//export ydb_result_callback
+func ydb_result_callback(res *C.struct_YdbResult, callback C.YdbResultCallback, userData *C.YdbUserCustomData) (hasError C.int) {
+	cpointer := ydbResultToGo(res)
+
+	var hasResult chan struct{}
+	cpointer.Data().RLock(func(synced queryState) {
+		hasResult = synced.done
+	})
+
+	go func() {
+		<-hasResult
+		C.c_helper_call_ydb_result_callback(callback, res, userData)
+	}()
+	return 0
 }
 
 //export ydb_result_has_errors

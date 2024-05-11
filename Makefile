@@ -5,7 +5,7 @@ all: cython_ydb_extension client_c_go_dynamic client_c_rust_dynamic go_headers r
 in_progress: client_c_go_static rust_library_static client_c_rust_static
 
 clean:
-	rm -rf c_client/client_go_static c_client/client_go_dynamic go/_obj rust_ydb_client/target cython_extension/*.so
+	rm -rf c_client/client_go_static c_client/client_go_dynamic go/_obj rust_ydb_client/target cython_extension/*.so cython_ydb_extension/*.so cython_ydb_extension/cython_ydb_extension.c
 
 client_c_go_static: go_library_static
 	gcc -o c_client/client_go_static c_client/client.c  -L go/_obj/ -l ydb_static

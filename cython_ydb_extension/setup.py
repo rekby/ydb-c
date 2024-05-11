@@ -7,9 +7,7 @@ import platform
 project_dir = dirname(dirname(abspath(__file__)))
 extra_compile_args = [
     "-DCYTHON_LIMITED_API",
-    "-DCYTHON_USE_TYPE_SPECS=1",
-    "-DCYTHON_USE_MODULE_STATE=1",
-    "-DPy_LIMITED_API=0x03070000"
+    "-DPy_LIMITED_API=0x03080000",
 ]
 
 if platform.processor() == 'arm':

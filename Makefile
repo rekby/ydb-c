@@ -20,9 +20,9 @@ client_c_rust_static: rust_library_static
 	gcc -o c_client/client_rust_static c_client/client.c  -L rust_ydb_client/target/x86_64-unknown-linux-musl/debug/ -l rust_ydb_client
 
 cython_ydb_extension: go_library_dynamic
-	cd cython_ydb_extension && rm -f *.so
+	cd cython_ydb_extension && rm -f *.so cython_ydb_extension.c
 	cp go/_obj/libydb.so cython_ydb_extension/
-	CPATH=c_interface cythonize -3 cython_ydb_extension/cython_ydb_extension.pyx
+	CPATH=c_interface python3 -m Cython.Build.Cythonize -3 cython_ydb_extension/cython_ydb_extension.pyx
 	cd cython_ydb_extension && python3 setup.py build_ext --inplace && mv cython_*.so cython_ydb_extension.so
 
 go_headers:

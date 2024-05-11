@@ -5,7 +5,12 @@ from os.path import abspath, dirname, join
 import platform
 
 project_dir = dirname(dirname(abspath(__file__)))
-extra_compile_args = []
+extra_compile_args = [
+    "-DCYTHON_LIMITED_API",
+    "-DCYTHON_USE_TYPE_SPECS=1",
+    "-DCYTHON_USE_MODULE_STATE=1",
+    "-DPy_LIMITED_API=0x03070000"
+]
 
 if platform.processor() == 'arm':
     extra_compile_args.append('-mcpu=apple-m1')
@@ -18,7 +23,10 @@ extensions = [
         runtime_library_dirs=[join(project_dir, "go", "_obj")],
         libraries=["ydb"],
         language="c",
-        extra_link_args=["-lydb"],
+        extra_link_args=[
+            "-L" + join(project_dir, "go", "_obj"), # library directory path
+            "-lydb",
+            ],
         extra_compile_args=extra_compile_args,
     )
 ]
